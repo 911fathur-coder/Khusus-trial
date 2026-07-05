@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="id" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>DS.Calc</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app-shell">
+
+  <div class="navbar" id="navbar">
+    <div class="navbar-inner">
+      <div class="navbar-brand">
+        <span class="brand-badge" id="brandBadge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2.5"/><path d="M7 7v3M11 7v4M15 7v3M19 7v4"/></svg>
+        </span>
+        <span class="navbar-compact-title" id="navCompactTitle">Kalkulator</span>
+      </div>
+      <div class="navbar-actions">
+        <button class="icon-btn" id="switchModeBtn" aria-label="Ganti Mode">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3l4 4-4 4M3 7h18M7 21l-4-4 4-4M21 17H3"/></svg>
+        </button>
+        <button class="icon-btn" id="themeToggle" aria-label="Ganti Tema">
+          <span class="theme-icon-wrap">
+            <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.2"/><path d="M12 2.5v2.4M12 19.1v2.4M4.2 4.2l1.7 1.7M18.1 18.1l1.7 1.7M2.5 12h2.4M19.1 12h2.4M4.2 19.8l1.7-1.7M18.1 5.9l1.7-1.7"/></svg>
+            <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8z"/></svg>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="scroll-area" id="scrollArea">
+    <div class="scroll-inner">
+
+      <div class="large-title-block">
+        <div class="large-title-row">
+          <div>
+            <h1 class="large-title" id="largeTitle">Kalkulator</h1>
+            <div class="large-title-sub" id="largeTitleSub">DS.CALC · PRESENTED BY FATHUR</div>
+          </div>
+          <button class="title-trailing-btn" id="clearHistoryBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6h12z"/></svg>
+            Hapus
+          </button>
+        </div>
+      </div>
+
+      <div class="segmented" id="tabSegmented">
+        <div class="segmented-indicator" id="tabIndicator"></div>
+        <button class="segmented-opt active" data-view="calculator">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2.5"/><path d="M7 7v3M11 7v4M15 7v3M19 7v4"/></svg>
+          Kalkulator
+        </button>
+        <button class="segmented-opt" data-view="history">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>
+          Riwayat
+        </button>
+        <button class="segmented-opt" data-view="settings">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="9" cy="18" r="2"/></svg>
+          Atur
+        </button>
+      </div>
+
+      <div class="view-stack">
+
+        <!-- CALCULATOR -->
+        <section class="view-panel active" id="view-calculator">
+          <div class="group-header">Setup &amp; Parameter</div>
+          <div class="card">
+            <div class="list-row tappable" id="rowProfile">
+              <span class="row-label">Profile Standard</span>
+              <div class="row-trailing"><span class="row-value" id="profileValue">Default</span>
+                <svg class="row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+              </div>
+            </div>
+            <div class="list-row" id="modeToggleRow">
+              <span class="row-label">Mode</span>
+              <div class="mini-segmented" id="modeSegmented" style="width:120px;">
+                <div class="mini-seg-indicator" id="modeIndicator"></div>
+                <button class="mini-seg-opt active" data-mode="1" style="flex:1;">1-Pt</button>
+                <button class="mini-seg-opt" data-mode="3" style="flex:1;">3-Pt</button>
+              </div>
+            </div>
+            <div class="list-row" id="noHeadRow">
+              <span class="row-label">No. Head</span>
+              <input class="row-field" id="headNoInput" inputmode="numeric" placeholder="Opsional">
+            </div>
+            <div class="list-row tappable hidden" id="rowHeadCount">
+              <span class="row-label">Jumlah Head</span>
+              <div class="row-trailing"><span class="row-value" id="headCountValue">8</span>
+                <svg class="row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <div class="group-header">Spesifikasi Material</div>
+          <div class="card">
+            <div class="list-row tappable" id="rowBody">
+              <span class="row-label">Tebal Body (mm)</span>
+              <div class="row-trailing"><span class="row-value" id="bodyValue">0.16</span>
+                <svg class="row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+              </div>
+            </div>
+            <div class="list-row tappable" id="rowEoe">
+              <span class="row-label">Tebal EOE (mm)</span>
+              <div class="row-trailing"><span class="row-value" id="eoeValue">0.22</span>
+                <svg class="row-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- ===== KALKULATOR MODE (single head, 4 parameter original) ===== -->
+          <div id="kalkulatorModeView">
+            <div class="group-header">Pengukuran Manual</div>
+            <div class="card" style="padding-top:12px;padding-bottom:6px;">
+              <div id="measureHead"></div>
+              <div id="measureBody"></div>
+            </div>
+
+            <button class="btn btn-primary" id="generateBtn">
+              <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M13 2L4 14h6l-1 8 10-14h-7l1-6z"/></svg>
+              <span>Hitung</span>
+            </button>
+            <button class="btn btn-destructive" id="clearBtn" style="margin-top:6px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Bersihkan Data
+            </button>
+
+            <div id="resultContainer"></div>
+          </div>
+
+          <!-- ===== FORM PDF MODE (multi-head wizard) ===== -->
+          <div id="formPdfModeView" class="hidden">
+            <div id="formPdfWizardWrap">
+              <div class="group-header" id="formPdfStepLabel">Langkah 1 / 7 — OCH</div>
+              <div class="card" id="formPdfWizardBody" style="padding:14px;"></div>
+              <div class="btn-row">
+                <button class="btn btn-secondary" id="formPdfBackBtn">Kembali</button>
+                <button class="btn btn-primary" id="formPdfNextBtn">Lanjut</button>
+              </div>
+            </div>
+            <div id="formPdfResultsWrap" class="hidden"></div>
+          </div>
+        </section>
+
+        <!-- HISTORY -->
+        <section class="view-panel" id="view-history">
+          <div id="historyListContainer"></div>
+        </section>
+
+        <!-- SETTINGS -->
+        <section class="view-panel" id="view-settings">
+          <div class="settings-section">
+            <div class="group-header">Profiles</div>
+            <div class="card">
+              <div id="profileListContainer"></div>
+              <div class="add-row">
+                <input id="newProfileName" placeholder="Nama profile baru…">
+                <button class="icon-btn" id="addProfileBtn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="settings-section">
+            <div class="group-header">Edit Standard — <span class="editing-name" id="editingProfileName"></span></div>
+            <div class="segmented size-sm" id="settingsSegmented" style="margin-bottom:14px;">
+              <div class="segmented-indicator" id="settingsIndicator"></div>
+              <button class="segmented-opt active" data-panel="panel-general">Umum</button>
+              <button class="segmented-opt" data-panel="panel-overlap">Overlap</button>
+              <button class="segmented-opt" data-panel="panel-lainnya">Lainnya</button>
+            </div>
+            <div class="card" id="panel-general"></div>
+            <div class="card hidden" id="panel-overlap"></div>
+            <div class="card hidden" id="panel-lainnya"></div>
+
+            <div class="btn-row">
+              <button class="btn btn-secondary" id="resetStandardsBtn">Standar</button>
+              <button class="btn btn-primary" id="saveSettingsBtn" style="box-shadow:none;">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" id="saveIcon"><path d="M12 5v14M5 12h14"/></svg>
+                <span id="saveLabel">Simpan</span>
+              </button>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg>
+    <span class="toast-text" id="toastText"></span>
+  </div>
+
+  <div class="sheet-backdrop" id="sheetBackdrop"></div>
+  <div class="sheet" id="sheet">
+    <div class="sheet-handle-zone" id="sheetHandleZone"><div class="sheet-handle"></div></div>
+    <div class="sheet-header"><span class="sheet-title" id="sheetTitle"></span>
+      <button class="icon-btn" id="sheetClose"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg></button>
+    </div>
+    <div class="sheet-body" id="sheetBody"></div>
+  </div>
+
+  <div class="alert-backdrop" id="alertBackdrop"></div>
+  <div class="alert-box" id="alertBox">
+    <div class="alert-content"><div class="alert-title" id="alertTitle"></div><div class="alert-message" id="alertMessage"></div></div>
+    <div class="alert-actions" id="alertActions"></div>
+  </div>
+
+  <!-- ============ MODE SELECT SCREEN ============ -->
+  <div class="gate-overlay" id="modeSelectScreen">
+    <div class="gate-card" style="max-width:380px;">
+      <h2 class="gate-title" style="margin-bottom:4px;">Pilih Mode</h2>
+      <p class="gate-message">Mau pakai yang mana sekarang?</p>
+      <div class="mode-select-options">
+        <button class="mode-select-btn" id="pickKalkulatorBtn">
+          <span class="mode-select-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2.5"/><path d="M7 7v3M11 7v4M15 7v3M19 7v4"/></svg>
+          </span>
+          <span class="mode-select-text">
+            <span class="mode-select-title">Kalkulator</span>
+            <span class="mode-select-desc">Hitung cepat 1 head, tanpa form cetak</span>
+          </span>
+        </button>
+        <button class="mode-select-btn" id="pickFormPdfBtn">
+          <span class="mode-select-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15h6M9 11h6"/></svg>
+          </span>
+          <span class="mode-select-text">
+            <span class="mode-select-title">Form PDF</span>
+            <span class="mode-select-desc">Inspeksi banyak head sekaligus, siap cetak</span>
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CONSENT GATE ============ -->
+  <div class="gate-overlay" id="consentGate">
+    <div class="gate-card">
+      <div class="gate-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.4 8.5-8 10-4.6-1.5-8-5-8-10V6l8-4z"/></svg>
+      </div>
+      <h2 class="gate-title">Persetujuan Penyimpanan Data</h2>
+      <p class="gate-message">Setiap data pengukuran yang Anda input dan hasil perhitungannya akan disimpan ke database untuk keperluan pencatatan &amp; audit kualitas. Dengan menekan "Setuju", Anda mengizinkan data tersebut disimpan.</p>
+      <div class="gate-actions">
+        <button class="btn btn-primary" id="consentAgreeBtn">Setuju &amp; Lanjutkan</button>
+        <button class="btn btn-secondary" id="consentDeclineBtn">Tidak Setuju</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ BLOCKED GATE ============ -->
+  <div class="gate-overlay" id="blockedGate">
+    <div class="gate-card">
+      <div class="gate-icon danger">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+      </div>
+      <h2 class="gate-title">Akses Ditutup</h2>
+      <p class="gate-message">Anda memilih untuk tidak menyetujui penyimpanan data pengukuran. Aplikasi ini memerlukan persetujuan tersebut agar dapat digunakan.</p>
+      <button class="btn btn-plain" id="reconsiderBtn">Tinjau ulang persetujuan</button>
+    </div>
+  </div>
+
+  <!-- ============ DEVELOPER PANEL ============ -->
+  <div class="dev-panel" id="devPanel">
+    <div class="dev-panel-header">
+      <span class="dev-panel-title">Developer Mode — Log Aktivitas</span>
+      <div style="display:flex;gap:8px;">
+        <button class="icon-btn" id="devRefreshBtn" aria-label="Muat ulang">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </button>
+        <button class="icon-btn danger" id="devClearAllBtn" aria-label="Hapus semua log">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6h12z"/></svg>
+        </button>
+        <button class="icon-btn" id="devLogoutBtn" aria-label="Keluar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+        </button>
+      </div>
+    </div>
+    <div class="dev-panel-body" id="devPanelBody"></div>
+  </div>
+
+</div>
+
+<!-- Firebase (Compat SDK — cocok dipakai tanpa bundler) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
