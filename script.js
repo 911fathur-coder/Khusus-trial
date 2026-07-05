@@ -524,16 +524,19 @@ class App{
 
   attachWizardInputEvents(){
     const standards = this.storage.getActiveProfile().standards;
-    this.dom.formPdfWizardBody.querySelectorAll('input').forEach(input=>{
+    const inputs = Array.from(this.dom.formPdfWizardBody.querySelectorAll('input'));
+    inputs.forEach((input, idx)=>{
       input.addEventListener('focus', ()=>input.select());
       input.addEventListener('input', ()=>{
         let val = input.value;
         if(val.includes(',')){ val = val.replace(',', '.'); input.value = val; }
         if(!/^[0-9.]*$/.test(val)){ input.value = val.replace(/[^0-9.]/g,''); val = input.value; }
         if((val.match(/\./g)||[]).length>1){ val = val.substring(0, val.lastIndexOf('.')); input.value = val; }
+        let advance = false;
         if(val.includes('.')){
           const parts = val.split('.');
           if(parts[1].length>2){ val = parts[0]+'.'+parts[1].substring(0,2); input.value = val; }
+          if(parts[1].length===2){ advance = true; }
         }
         const step = input.dataset.step, head = parseInt(input.dataset.head,10);
         if(input.dataset.point!==undefined){
@@ -547,6 +550,7 @@ class App{
         if(!isNaN(num) && std && ((std.min!==null && num<std.min) || (std.max!==null && num>std.max))){
           input.classList.add('spec-fail');
         }
+        if(advance){ if(idx<inputs.length-1) inputs[idx+1].focus(); else input.blur(); }
       });
     });
   }
@@ -651,9 +655,166 @@ class App{
       if(record.checks['%TR']==='fail') record.overallStatus = 'fail';
     });
     if(!allFilled){ this.showToast('Isi %TR untuk semua head dulu sebelum lanjut'); return; }
-    // TODO: buka form header (Design/Shift/Line/No SPP/dst) -> Preview -> Download ke Google Sheets + PDF.
-    // Menunggu konfirmasi posisi sel spreadsheet dari user sebelum bagian ini disambungkan.
-    this.showToast('Data siap. Fitur Cetak ke Sheets/PDF menyusul setelah setup spreadsheet selesai.');
+    this.openPrintHeaderForm();
+  }
+
+  /* =========================================================
+     CETAK — FORM HEADER -> PREVIEW -> DOWNLOAD (Sheets + PDF)
+     ========================================================= */
+  openPrintHeaderForm(){
+    const todayStr = new Date().toLocaleDateString('id-ID', {day:'2-digit', month:'2-digit', year:'numeric'});
+    const h = this.formPdf.headerData || {};
+    const field = (id,label,val,required)=>
+      '<div class="dev-login-field"><label>'+label+(required?' *':'')+'</label>'
+      + '<input type="text" id="'+id+'" value="'+(val||'').replace(/"/g,'&quot;')+'"></div>';
+    const html = '<div class="dev-login-form">'
+      + '<div class="dev-login-field"><label>Tanggal Periksa/Prod</label><input type="text" id="hfTanggal" value="'+todayStr+'"></div>'
+      + field('hfDesign','Design',h.design)
+      + field('hfNoSpp','No SPP End/No Lot',h.noSpp)
+      + field('hfShift','Shift',h.shift)
+      + '<div class="dev-login-field"><label>Body Thickness (otomatis)</label><input type="text" value="'+fmt(this.state.body)+'" disabled></div>'
+      + field('hfTglProdEoe','Tgl Prod/Shift End (EOE)',h.tglProdEoe)
+      + field('hfLine','Line',h.line)
+      + '<div class="dev-login-field"><label>End/EOE Thickness (otomatis)</label><input type="text" value="'+fmt(this.state.eoe)+'" disabled></div>'
+      + field('hfFitter','Fitter',h.fitter)
+      + field('hfCanSize','Can Size',h.canSize)
+      + field('hfLacquer','End/EOE Lacquer In/Out',h.lacquer)
+      + field('hfInspector','Inspector',h.inspector)
+      + field('hfKodeEoe','Kode EOE ***',h.kodeEoe,true)
+      + '<div class="dev-login-field"><label>Catatan (opsional)</label><input type="text" id="hfCatatan" value="'+(h.catatan||'').replace(/"/g,'&quot;')+'"></div>'
+      + '<div class="dev-login-error" id="hfError"></div>'
+      + '<button class="btn btn-primary" id="hfPreviewBtn">Preview</button>'
+      + '</div>';
+    this.openSheet('Data Form Cetak', html, ()=>{
+      document.getElementById('hfPreviewBtn').addEventListener('click', ()=>this.handlePreviewSubmit());
+    });
+  }
+
+  handlePreviewSubmit(){
+    const val = id=>document.getElementById(id).value.trim();
+    const kodeEoe = val('hfKodeEoe');
+    const errEl = document.getElementById('hfError');
+    if(!kodeEoe){ errEl.textContent = 'Kode EOE *** wajib diisi.'; return; }
+    this.formPdf.headerData = {
+      tanggal: val('hfTanggal'), design: val('hfDesign'), noSpp: val('hfNoSpp'),
+      shift: val('hfShift'), tglProdEoe: val('hfTglProdEoe'), line: val('hfLine'),
+      fitter: val('hfFitter'), canSize: val('hfCanSize'), lacquer: val('hfLacquer'),
+      inspector: val('hfInspector'), kodeEoe, catatan: val('hfCatatan')
+    };
+    this.closeSheet();
+    this.openPrintPreview();
+  }
+
+  openPrintPreview(){
+    const h = this.formPdf.headerData;
+    const results = this.formPdf.results;
+    const passCount = results.filter(r=>r.overallStatus==='pass').length;
+    const failCount = results.length - passCount;
+    const rows = [
+      ['Tanggal', h.tanggal], ['Design', h.design], ['No SPP/Lot', h.noSpp],
+      ['Shift', h.shift], ['Tgl Prod EOE', h.tglProdEoe], ['Line', h.line],
+      ['Fitter', h.fitter], ['Can Size', h.canSize], ['Lacquer In/Out', h.lacquer],
+      ['Inspector', h.inspector], ['Kode EOE ***', h.kodeEoe], ['Catatan', h.catatan||'—']
+    ];
+    const html = '<div class="raw-block" style="margin:0 0 14px;">'
+      + rows.map(r=>'<div class="raw-row"><span>'+r[0]+'</span><span style="font-weight:700;">'+(r[1]||'—')+'</span></div>').join('')
+      + '</div>'
+      + '<div class="spec-chip-row" style="padding:0 0 14px;">'
+      + '<div class="spec-chip"><span class="l">Total Head</span><span class="v">'+results.length+'</span></div>'
+      + '<div class="spec-chip"><span class="l">Lolos</span><span class="v" style="color:var(--success);">'+passCount+'</span></div>'
+      + '<div class="spec-chip"><span class="l">Gagal</span><span class="v" style="color:var(--danger);">'+failCount+'</span></div>'
+      + '</div>'
+      + '<div class="dev-login-error" id="dlError"></div>'
+      + '<button class="btn btn-primary" id="dlDownloadBtn">Download PDF</button>'
+      + '<button class="btn btn-plain" id="dlBackBtn" style="margin-top:4px;">Kembali edit data form</button>';
+    this.openSheet('Preview Sebelum Download', html, ()=>{
+      document.getElementById('dlDownloadBtn').addEventListener('click', ()=>this.handleDownloadToSheets());
+      document.getElementById('dlBackBtn').addEventListener('click', ()=>{ this.closeSheet(); this.openPrintHeaderForm(); });
+    });
+  }
+
+  buildSheetsPayload(){
+    const h = this.formPdf.headerData;
+    const profile = this.storage.getActiveProfile();
+    const nowTime = new Date().toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'});
+    const heads = this.formPdf.results.map((record,i)=>{
+      const points = {};
+      ['Flange Width','C/S','Seam Thickness','Seam Length','Body Hook','Cover Hook'].forEach(p=>{
+        points[p] = record.inputs.measurements[p];
+      });
+      return {
+        headNo: i+1,
+        jam: nowTime,
+        och: record.results['OCH'],
+        points,
+        avg: {
+          'Flange Width': record.results['Flange Width'], 'C/S': record.results['C/S'],
+          'Seam Thickness': record.results['Seam Thickness'], 'Seam Length': record.results['Seam Length'],
+          'Body Hook': record.results['Body Hook'], 'Cover Hook': record.results['Cover Hook'],
+          'Actual Overlap': record.results['Actual Overlap'], '% Overlap': record.results['% Overlap'],
+          '%TR': record.results['%TR'], '%BHB': record.results['%BHB'], 'Freespace': record.results['Freespace']
+        },
+        actOlPoints: record.overlapPoints.map(p=>p.actual),
+        percentOlPoints: record.overlapPoints.map(p=>p.percent)
+      };
+    });
+    return {
+      header: {
+        tglPeriksa: h.tanggal, design: h.design, noSppLot: h.noSpp,
+        shift: h.shift, bodyThickness: fmt(this.state.body), tglProdShiftEoe: h.tglProdEoe,
+        line: h.line, eoeThickness: fmt(this.state.eoe), fitter: h.fitter,
+        canSize: h.canSize, lacquerInOut: h.lacquer, inspector: h.inspector,
+        kodeEoe: h.kodeEoe, catatan: h.catatan
+      },
+      heads,
+      standards: profile.standards
+    };
+  }
+
+  async handleDownloadToSheets(){
+    const btn = document.getElementById('dlDownloadBtn');
+    const errEl = document.getElementById('dlError');
+    errEl.textContent = '';
+    if(!window.SHEETS_WEBAPP_URL || window.SHEETS_WEBAPP_URL.indexOf('GANTI_')===0){
+      errEl.textContent = 'URL Apps Script belum diisi di sheets-config.js (lihat SHEETS_SETUP.md).';
+      return;
+    }
+    const originalHTML = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"></span><span>Mengirim & membuat PDF…</span>';
+    btn.setAttribute('disabled','');
+    try{
+      const payload = this.buildSheetsPayload();
+      const res = await fetch(window.SHEETS_WEBAPP_URL, {
+        method:'POST',
+        headers:{'Content-Type':'text/plain;charset=utf-8'},
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if(!data || !data.pdfBase64) throw new Error(data && data.error ? data.error : 'Respons server tidak valid');
+
+      const byteChars = atob(data.pdfBase64);
+      const byteNumbers = new Array(byteChars.length);
+      for(let i=0;i<byteChars.length;i++) byteNumbers[i] = byteChars.charCodeAt(i);
+      const blob = new Blob([new Uint8Array(byteNumbers)], {type:'application/pdf'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = (data.filename || 'DS-Form-'+Date.now()+'.pdf');
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(()=>URL.revokeObjectURL(url), 4000);
+
+      this.closeSheet();
+      this.showToast('PDF berhasil didownload & form di Sheets sudah direset');
+      vibrate(12);
+      // Sesi Form PDF ini selesai — siapkan sesi baru
+      this.resetFormPdfWizard();
+      this.renderFormPdfStep();
+    }catch(err){
+      console.error(err);
+      errEl.textContent = 'Gagal: '+(err.message||'periksa koneksi & URL Apps Script');
+      btn.innerHTML = originalHTML;
+      btn.removeAttribute('disabled');
+    }
   }
 
   /* =========================================================
