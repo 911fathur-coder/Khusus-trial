@@ -8,4 +8,4 @@
    Tempel URL itu di bawah ini, ganti seluruh teks GANTI_DENGAN_URL_WEB_APP_KAMU.
    ========================================================================== */
 
-window.SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbz0IFLwyQ8cOGTa3tMVCVurfSSCaCJVCKcdEFjr5l1URo-YLQ6YFxmAC-BlY3PxjGRO7A/exec";
+window.SHEETS_WEBAPP_URL = "https://script.google.com/macros/s/AKfycbxWQqh0c_pp6klr3l2QCc4-E7sG1UQz_uvr9VIDcvqhUi2uMiPAvuiGCF0Bti3yQeVSpw/exec";
