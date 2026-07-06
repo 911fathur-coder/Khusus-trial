@@ -42,8 +42,8 @@ class StorageManager {
       'Body Hook':{min:1.70,max:2.10}, 'Cover Hook':{min:1.50,max:1.90},
       'Actual Overlap':{min:1.00,max:null}, '% Overlap':{min:0,max:null},
       '%BHB':{min:75,max:null}, 'Freespace':{min:0,max:null},
-      'OCH':{min:null,max:null}, 'Flange Width':{min:null,max:null},
-      'C/S':{min:null,max:null}, '%TR':{min:null,max:null}
+      'OCH':{min:103.85,max:104.45}, 'Flange Width':{min:2.00,max:2.40},
+      'C/S':{min:5.08,max:5.48}, '%TR':{min:75,max:null}
     };
   }
 }
