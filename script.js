@@ -156,7 +156,10 @@ class App{
       brandBadge:$('brandBadge'),
       consentGate:$('consentGate'), consentAgreeBtn:$('consentAgreeBtn'), consentDeclineBtn:$('consentDeclineBtn'),
       blockedGate:$('blockedGate'), reconsiderBtn:$('reconsiderBtn'),
-      devPanel:$('devPanel'), devPanelBody:$('devPanelBody'), devRefreshBtn:$('devRefreshBtn'), devClearAllBtn:$('devClearAllBtn'), devLogoutBtn:$('devLogoutBtn'),
+      devPanel:$('devPanel'), devRefreshBtn:$('devRefreshBtn'), devClearAllBtn:$('devClearAllBtn'), devLogoutBtn:$('devLogoutBtn'),
+      devSearchInput:$('devSearchInput'), devStatusSegmented:$('devStatusSegmented'), devStatusIndicator:$('devStatusIndicator'),
+      devDailySummary:$('devDailySummary'), devLogListArea:$('devLogListArea'),
+      offlineBanner:$('offlineBanner'),
       modeSelectScreen:$('modeSelectScreen'), pickKalkulatorBtn:$('pickKalkulatorBtn'), pickFormPdfBtn:$('pickFormPdfBtn'), switchModeBtn:$('switchModeBtn'),
       modeToggleRow:$('modeToggleRow'), noHeadRow:$('noHeadRow'), rowHeadCount:$('rowHeadCount'), headCountValue:$('headCountValue'),
       kalkulatorModeView:$('kalkulatorModeView'), formPdfModeView:$('formPdfModeView'),
@@ -192,6 +195,7 @@ class App{
     this.initGates();
     this.initDevAccess();
     this.initModeSelect();
+    this.initOfflineIndicator();
     this.flushPendingLogs();
     requestAnimationFrame(()=>{ this.layoutIndicator(this.dom.tabSegmented, this.dom.tabIndicator); this.layoutIndicator(this.dom.settingsSegmented, this.dom.settingsIndicator); });
     window.addEventListener('resize', ()=>{ this.layoutIndicator(this.dom.tabSegmented, this.dom.tabIndicator); this.layoutIndicator(this.dom.settingsSegmented, this.dom.settingsIndicator); });
@@ -372,6 +376,14 @@ class App{
   /* =========================================================
      CONSENT GATE & BLOCKED GATE
      ========================================================= */
+  /* ---------- offline indicator ---------- */
+  initOfflineIndicator(){
+    const update = ()=>{ this.dom.offlineBanner.classList.toggle('show', !navigator.onLine); };
+    window.addEventListener('online', update);
+    window.addEventListener('offline', update);
+    update();
+  }
+
   initGates(){
     const consentStatus = localStorage.getItem('ds_consent');
     if(consentStatus === 'declined'){
@@ -990,6 +1002,7 @@ class App{
 
   openDevPanel(){
     this.dom.devPanel.classList.add('show');
+    this.initDevToolbar();
     this.renderDevDashboard();
   }
   closeDevPanel(){
@@ -1003,54 +1016,102 @@ class App{
      oleh TTL 7 hari (lihat FIREBASE_SETUP.md) jadi jarang akan mepet. */
   DEV_LOG_LIMIT = 300;
 
+  initDevToolbar(){
+    if(this._devToolbarReady) return;
+    this._devToolbarReady = true;
+    this._devStatusFilter = 'all';
+    this.dom.devSearchInput.addEventListener('input', ()=>this.renderDevLogList());
+    this.initSegmented(this.dom.devStatusSegmented, this.dom.devStatusIndicator, (status)=>{
+      this._devStatusFilter = status;
+      this.renderDevLogList();
+    }, 'data-status');
+    requestAnimationFrame(()=>this.layoutIndicator(this.dom.devStatusSegmented, this.dom.devStatusIndicator));
+  }
+
   async renderDevDashboard(){
-    this.dom.devPanelBody.innerHTML = '<div class="empty-state"><p>Memuat data…</p></div>';
+    this.dom.devDailySummary.innerHTML = '';
+    this.dom.devLogListArea.innerHTML = '<div class="empty-state"><p>Memuat data…</p></div>';
     if(!window.firebaseDb){
-      this.dom.devPanelBody.innerHTML = '<div class="empty-state"><h4>Firebase belum siap</h4><p>Lengkapi firebase-config.js terlebih dahulu.</p></div>';
+      this.dom.devLogListArea.innerHTML = '<div class="empty-state"><h4>Firebase belum siap</h4><p>Lengkapi firebase-config.js terlebih dahulu.</p></div>';
       return;
     }
     try{
       const snap = await window.firebaseDb.collection('activity_logs').orderBy('timestamp','desc').limit(this.DEV_LOG_LIMIT).get();
-      if(snap.empty){
-        this.dom.devPanelBody.innerHTML = '<div class="empty-state"><h4>Belum ada data</h4><p>Log aktivitas user akan muncul di sini setelah mereka melakukan perhitungan.</p></div>';
-        return;
-      }
-      this.dom.devPanelBody.innerHTML = '<div class="dev-log-count">Menampilkan '+snap.docs.length+' log terbaru'+(snap.docs.length>=this.DEV_LOG_LIMIT?' (mungkin ada lebih banyak)':'')+'</div>'
-        + snap.docs.map(doc=>{
-        const d = doc.data();
-        const date = new Date(d.timestamp).toLocaleString('id-ID', {dateStyle:'medium', timeStyle:'short'});
-        const inputSummary = Object.entries(d.measurements||{}).map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):v)).join(' · ');
-        const resultSummary = Object.entries(d.results||{}).map(([k,v])=>k+': '+(typeof v==='number'?v.toFixed(2):v)).join(' · ');
-        const statusLabel = d.overallStatus==='pass' ? 'SESUAI STANDAR' : 'DI LUAR STANDAR';
-        return '<div class="dev-log-card" data-doc-id="'+doc.id+'">'
-          + '<button class="dev-log-delete" data-doc-id="'+doc.id+'" aria-label="Hapus log ini">'+ICON_TRASH+'</button>'
-          + '<div class="dev-log-top">'
-          +   '<span class="dev-log-time">'+date+'</span>'
-          +   '<span class="dev-log-device">'+(d.deviceLabel||'—')+'</span>'
-          +   '<span class="dev-log-status '+d.overallStatus+'">'+statusLabel+'</span>'
-          +   (d.wasDelayed ? '<span class="dev-log-status delayed">SEMPAT TERTUNDA</span>' : '')
-          + '</div>'
-          + '<div class="dev-log-row"><span class="k">Profile</span><span class="v">'+(d.profileName||'—')+(d.headNo?(' · H#'+d.headNo):'')+'</span></div>'
-          + '<div class="dev-log-row"><span class="k">Data Input</span><span class="v">'+inputSummary+'</span></div>'
-          + '<div class="dev-log-row"><span class="k">Hasil Generate</span><span class="v">'+resultSummary+'</span></div>'
-          + '<div class="dev-log-row"><span class="k">Device ID</span><span class="v">'+(d.deviceId||'—')+'</span></div>'
-          + '</div>';
-      }).join('');
-
-      this.dom.devPanelBody.querySelectorAll('.dev-log-delete').forEach(btn=>{
-        btn.addEventListener('click', (e)=>{
-          e.stopPropagation();
-          const docId = btn.dataset.docId;
-          this.openAlert('Hapus Log Ini?', 'Data log pengukuran ini akan dihapus permanen dari database.', [
-            {text:'Batal', style:'cancel'},
-            {text:'Hapus', style:'destructive', onClick:()=>this.handleDevDeleteLog(docId)}
-          ]);
-        });
-      });
+      this._devLogsCache = snap.docs.map(doc=>Object.assign({_id:doc.id}, doc.data()));
+      this.renderDevDailySummary();
+      this.renderDevLogList();
     }catch(err){
       console.error(err);
-      this.dom.devPanelBody.innerHTML = '<div class="empty-state"><h4>Gagal memuat</h4><p>'+(err.message||'Periksa koneksi & Firestore Rules.')+'</p></div>';
+      this.dom.devLogListArea.innerHTML = '<div class="empty-state"><h4>Gagal memuat</h4><p>'+(err.message||'Periksa koneksi & Firestore Rules.')+'</p></div>';
     }
+  }
+
+  renderDevDailySummary(){
+    const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+    const todayStartMs = todayStart.getTime();
+    let pass=0, fail=0;
+    (this._devLogsCache||[]).forEach(d=>{
+      if(d.timestamp>=todayStartMs){ if(d.overallStatus==='pass') pass++; else fail++; }
+    });
+    const total = pass+fail;
+    this.dom.devDailySummary.innerHTML = '<div class="dev-summary">'
+      + '<div class="dev-summary-chip"><span class="l">Hari Ini</span><span class="v">'+total+'</span></div>'
+      + '<div class="dev-summary-chip"><span class="l">Lolos</span><span class="v pass">'+pass+'</span></div>'
+      + '<div class="dev-summary-chip"><span class="l">Gagal</span><span class="v fail">'+fail+'</span></div>'
+      + '</div>';
+  }
+
+  renderDevLogList(){
+    const all = this._devLogsCache || [];
+    const term = this.dom.devSearchInput.value.trim().toLowerCase();
+    const statusFilter = this._devStatusFilter || 'all';
+    const filtered = all.filter(d=>{
+      if(statusFilter!=='all' && d.overallStatus!==statusFilter) return false;
+      if(!term) return true;
+      const haystack = [(d.profileName||''), (d.deviceLabel||''), (d.deviceId||''), (d.headNo!=null?String(d.headNo):'')].join(' ').toLowerCase();
+      return haystack.indexOf(term)!==-1;
+    });
+
+    if(all.length===0){
+      this.dom.devLogListArea.innerHTML = '<div class="empty-state"><h4>Belum ada data</h4><p>Log aktivitas user akan muncul di sini setelah mereka melakukan perhitungan.</p></div>';
+      return;
+    }
+    if(filtered.length===0){
+      this.dom.devLogListArea.innerHTML = '<div class="empty-state"><h4>Tidak ketemu</h4><p>Coba ubah kata kunci atau filter status.</p></div>';
+      return;
+    }
+
+    this.dom.devLogListArea.innerHTML = '<div class="dev-log-count">Menampilkan '+filtered.length+' dari '+all.length+' log'+(all.length>=this.DEV_LOG_LIMIT?' (mungkin ada lebih banyak)':'')+'</div>'
+      + filtered.map(d=>{
+      const date = new Date(d.timestamp).toLocaleString('id-ID', {dateStyle:'medium', timeStyle:'short'});
+      const inputSummary = Object.entries(d.measurements||{}).map(([k,v])=>k+': '+(Array.isArray(v)?v.join(', '):v)).join(' · ');
+      const resultSummary = Object.entries(d.results||{}).map(([k,v])=>k+': '+(typeof v==='number'?v.toFixed(2):v)).join(' · ');
+      const statusLabel = d.overallStatus==='pass' ? 'SESUAI STANDAR' : 'DI LUAR STANDAR';
+      return '<div class="dev-log-card" data-doc-id="'+d._id+'">'
+        + '<button class="dev-log-delete" data-doc-id="'+d._id+'" aria-label="Hapus log ini">'+ICON_TRASH+'</button>'
+        + '<div class="dev-log-top">'
+        +   '<span class="dev-log-time">'+date+'</span>'
+        +   '<span class="dev-log-device">'+(d.deviceLabel||'—')+'</span>'
+        +   '<span class="dev-log-status '+d.overallStatus+'">'+statusLabel+'</span>'
+        +   (d.wasDelayed ? '<span class="dev-log-status delayed">SEMPAT TERTUNDA</span>' : '')
+        + '</div>'
+        + '<div class="dev-log-row"><span class="k">Profile</span><span class="v">'+(d.profileName||'—')+(d.headNo?(' · H#'+d.headNo):'')+'</span></div>'
+        + '<div class="dev-log-row"><span class="k">Data Input</span><span class="v">'+inputSummary+'</span></div>'
+        + '<div class="dev-log-row"><span class="k">Hasil Generate</span><span class="v">'+resultSummary+'</span></div>'
+        + '<div class="dev-log-row"><span class="k">Device ID</span><span class="v">'+(d.deviceId||'—')+'</span></div>'
+        + '</div>';
+    }).join('');
+
+    this.dom.devLogListArea.querySelectorAll('.dev-log-delete').forEach(btn=>{
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        const docId = btn.dataset.docId;
+        this.openAlert('Hapus Log Ini?', 'Data log pengukuran ini akan dihapus permanen dari database.', [
+          {text:'Batal', style:'cancel'},
+          {text:'Hapus', style:'destructive', onClick:()=>this.handleDevDeleteLog(docId)}
+        ]);
+      });
+    });
   }
 
   async handleDevDeleteLog(docId){
@@ -1068,7 +1129,7 @@ class App{
     this.openAlert('Hapus SEMUA Log?', 'Seluruh log aktivitas di database akan dihapus permanen dan tidak bisa dikembalikan. Yakin lanjut?', [
       {text:'Batal', style:'cancel'},
       {text:'Hapus Semua', style:'destructive', onClick:async ()=>{
-        this.dom.devPanelBody.innerHTML = '<div class="empty-state"><p>Menghapus semua log…</p></div>';
+        this.dom.devLogListArea.innerHTML = '<div class="empty-state"><p>Menghapus semua log…</p></div>';
         try{
           let totalDeleted = 0;
           // Hapus per-batch 500 dokumen (batas writeBatch Firestore), diulang
@@ -1087,7 +1148,7 @@ class App{
           this.renderDevDashboard();
         }catch(err){
           console.error(err);
-          this.dom.devPanelBody.innerHTML = '<div class="empty-state"><h4>Gagal menghapus</h4><p>'+(err.message||'Periksa koneksi & Firestore Rules.')+'</p></div>';
+          this.dom.devLogListArea.innerHTML = '<div class="empty-state"><h4>Gagal menghapus</h4><p>'+(err.message||'Periksa koneksi & Firestore Rules.')+'</p></div>';
         }
       }}
     ]);
