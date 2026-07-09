@@ -264,7 +264,7 @@ html[data-theme="dark"] .icon-moon{opacity:1;transform:rotate(0deg) scale(1);}
   display:flex;
   align-items:center;
   padding:9px 14px;
-  gap:10px;
+  gap:8px;
 }
 .measure-label{
   flex: 0 0 95px;
@@ -278,6 +278,15 @@ html[data-theme="dark"] .icon-moon{opacity:1;transform:rotate(0deg) scale(1);}
   gap:8px;
   flex:1;
 }
+.scan-btn{
+  width:28px;height:28px;border-radius:9px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--accent-soft);color:var(--accent);
+  transition:transform var(--t-fast) var(--spring);
+}
+.scan-btn svg{width:15px;height:15px;}
+.scan-btn:active{transform:scale(.88);}
+.scan-btn.busy{animation:spin 1s linear infinite;}
 .measure-input{
   flex:1;
   width: 0;
@@ -499,7 +508,7 @@ html[data-theme="dark"] .icon-moon{opacity:1;transform:rotate(0deg) scale(1);}
 .alert-box.show{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto;}
 .alert-content{padding:20px 18px 16px;text-align:center;}
 .alert-title{font-weight:700;font-size:15.5px;margin-bottom:5px;}
-.alert-message{font-size:12.5px;color:var(--label-2);line-height:1.45;}
+.alert-message{font-size:12.5px;color:var(--label-2);line-height:1.45;white-space:pre-line;}
 .alert-actions{display:flex;border-top:1px solid var(--separator);}
 .alert-btn{flex:1;padding:13px;font-weight:600;font-size:14.5px;border-right:1px solid var(--separator);}
 .alert-btn:last-child{border-right:none;}
