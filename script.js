@@ -143,7 +143,7 @@ class App{
       headNoInput:$('headNoInput'),
       rowBody:$('rowBody'), bodyValue:$('bodyValue'),
       rowEoe:$('rowEoe'), eoeValue:$('eoeValue'),
-      measureHead:$('measureHead'), measureBody:$('measureBody'),
+      measureHead:$('measureHead'), measureBody:$('measureBody'), ocrFileInput:$('ocrFileInput'),
       generateBtn:$('generateBtn'), clearBtn:$('clearBtn'), resultContainer:$('resultContainer'),
       historyListContainer:$('historyListContainer'),
       profileListContainer:$('profileListContainer'), newProfileName:$('newProfileName'), addProfileBtn:$('addProfileBtn'),
@@ -1213,15 +1213,19 @@ class App{
     head += '</div></div>';
     this.dom.measureHead.innerHTML = head;
 
+    const ICON_CAMERA = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>';
     let body = params.map(p=>{
       const label = p.replace(' ','<br>');
       const inputs = Array.from({length:points},(_,i)=>
         '<input type="text" inputmode="decimal" class="measure-input" data-param="'+p+'" data-idx="'+i+'" placeholder="0.00">'
       ).join('');
-      return '<div class="measure-row"><span class="measure-label">'+label+'</span><div class="measure-inputs">'+inputs+'</div></div>';
+      return '<div class="measure-row"><span class="measure-label">'+label+'</span>'
+        + '<button class="scan-btn" data-scan-param="'+p+'" title="Scan angka (uji coba OCR)">'+ICON_CAMERA+'</button>'
+        + '<div class="measure-inputs">'+inputs+'</div></div>';
     }).join('');
     this.dom.measureBody.innerHTML = body;
     this.attachMeasureInputEvents();
+    this.attachScanButtonEvents();
   }
   attachMeasureInputEvents(){
     const inputs = Array.from(this.dom.measureBody.querySelectorAll('.measure-input'));
@@ -1241,6 +1245,81 @@ class App{
       });
     });
   }
+  /* =========================================================
+     OCR SCAN (PROTOTIPE) — baca angka tulisan tangan dari foto,
+     pakai Tesseract.js (gratis, jalan di HP, tanpa server).
+     Cuma mengisi Titik A per parameter untuk tahap uji coba ini.
+     Hasil bacaan SELALU diminta konfirmasi user dulu sebelum
+     benar-benar mengisi field — tidak pernah auto-isi tanpa cek.
+     ========================================================= */
+  attachScanButtonEvents(){
+    this.dom.measureBody.querySelectorAll('.scan-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        this._ocrTargetParam = btn.dataset.scanParam;
+        this._ocrTargetBtn = btn;
+        this.dom.ocrFileInput.value = '';
+        this.dom.ocrFileInput.click();
+      });
+    });
+    if(!this._ocrFileInputBound){
+      this._ocrFileInputBound = true;
+      this.dom.ocrFileInput.addEventListener('change', (e)=>{
+        const file = e.target.files && e.target.files[0];
+        if(file) this.handleOcrCapture(file);
+      });
+    }
+  }
+
+  async getOcrWorker(){
+    if(this._ocrWorker) return this._ocrWorker;
+    if(typeof Tesseract==='undefined'){
+      throw new Error('Library OCR gagal dimuat (cek koneksi internet untuk pemakaian pertama kali)');
+    }
+    this.showToast('Menyiapkan OCR — agak lama untuk pemakaian pertama…');
+    const worker = await Tesseract.createWorker('eng');
+    await worker.setParameters({ tessedit_char_whitelist: '0123456789.' });
+    this._ocrWorker = worker;
+    return worker;
+  }
+
+  async handleOcrCapture(file){
+    const btn = this._ocrTargetBtn;
+    const param = this._ocrTargetParam;
+    if(btn) btn.classList.add('busy');
+    try{
+      const worker = await this.getOcrWorker();
+      const { data:{ text } } = await worker.recognize(file);
+      const match = text.match(/\d+\.\d+|\d+/);
+      if(!match){
+        this.openAlert('Nggak Kebaca', 'OCR nggak nemu angka di foto itu. Coba foto ulang lebih dekat & fokus ke satu angka aja.', [{text:'Oke', style:'cancel'}]);
+        return;
+      }
+      let value = match[0];
+      if(!value.includes('.') && value.length>2){
+        // heuristik ringan: kalau OCR baca "124" tanpa titik, kemungkinan besar maksudnya "1.24"
+        value = value.slice(0,-2)+'.'+value.slice(-2);
+      }
+      this.openAlert('Hasil Scan (' + param + ')', 'Terbaca: ' + value + '\n\nIni bacaan OCR, bukan alat presisi — cek dulu sebelum dipakai. Isi ke Titik A?', [
+        {text:'Batal', style:'cancel'},
+        {text:'Pakai Angka Ini', style:'confirm', onClick:()=>this.applyOcrValue(param, value)}
+      ]);
+    }catch(err){
+      console.error(err);
+      this.openAlert('OCR Gagal', err.message || 'Terjadi kesalahan saat membaca gambar.', [{text:'Oke', style:'cancel'}]);
+    }finally{
+      if(btn) btn.classList.remove('busy');
+    }
+  }
+
+  applyOcrValue(param, value){
+    const input = this.dom.measureBody.querySelector('.measure-input[data-param="'+param+'"][data-idx="0"]');
+    if(!input) return;
+    input.value = value;
+    input.dispatchEvent(new Event('input'));
+    vibrate(10);
+    this.showToast('Titik A '+param+' terisi dari scan');
+  }
+
   validateInputLive(input){
     const wasFail = input.classList.contains('spec-fail');
     input.classList.remove('spec-fail');
