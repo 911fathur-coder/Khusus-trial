@@ -229,11 +229,39 @@
         </div>
 
         <div id="timingResultList"></div>
+      </div>
 
-        <button class="btn btn-whatsapp hidden" id="timingShareBtn">
-          <svg viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M12 2C6.48 2 2 6.48 2 12c0 1.85.5 3.58 1.36 5.07L2 22l5.07-1.32C8.53 21.5 10.22 22 12 22c5.52 0 10-4.48 10-10S17.52 2 12 2zm5.2 14.2c-.22.62-1.3 1.18-1.8 1.24-.46.06-1.03.08-1.66-.1-.38-.12-.87-.28-1.5-.55-2.64-1.14-4.36-3.8-4.5-3.98-.13-.18-1.08-1.43-1.08-2.73s.68-1.93.93-2.2c.22-.24.5-.3.66-.3.17 0 .33 0 .48.01.15.01.36-.06.56.43.22.53.74 1.83.8 1.96.07.14.11.3.02.48-.6.18-.13.3-.26.46-.13.16-.28.35-.4.47-.13.13-.27.27-.12.53.15.27.68 1.12 1.46 1.81 1 .9 1.85 1.18 2.11 1.31.27.13.42.11.58-.07.16-.18.68-.79.86-1.06.18-.27.36-.22.6-.13.24.08 1.53.72 1.8.86.26.13.44.2.5.31.07.13.07.7-.15 1.32z"/></svg>
-          <span>Copy Laporan WhatsApp</span>
+      <!-- ============ APP: SPC SEAMER ============ -->
+      <div id="spcSeamerApp" class="hidden">
+        <div class="segmented" id="spcSeamerParamSegmented">
+          <div class="segmented-indicator" id="spcSeamerParamIndicator"></div>
+          <button class="segmented-opt active" data-param="thickness">Seam Thickness</button>
+          <button class="segmented-opt" data-param="length">Seam Length</button>
+          <button class="segmented-opt" data-param="countersink">Countersink</button>
+        </div>
+
+        <div class="group-header" id="spcSeamerInputTitle">Input Pengukuran (Seam Thickness)</div>
+        <div class="card" style="padding:14px 10px;">
+          <p class="spc-instruction" id="spcSeamerInstruction">Ketik 2 angka di belakang koma (contoh: 27 untuk 1.27)</p>
+          <div class="spc-table-wrap" id="spcSeamerInputTableWrap"></div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="spcSeamerResetBtn">Reset</button>
+          <button class="btn btn-primary" id="spcSeamerGenerateBtn">Generate Tren</button>
+        </div>
+        <button class="btn btn-secondary" id="spcSeamerPdfBtn" style="margin-top:6px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15h6M9 11h6"/></svg>
+          <span>Export ke PDF <span class="btn-soon-tag">Segera Hadir</span></span>
         </button>
+
+        <div id="spcSeamerOutputWrap" class="hidden">
+          <div class="group-header" id="spcSeamerOutputTitle">Master Preview (Seam Thickness)</div>
+          <div class="card" style="padding:10px 6px;">
+            <div class="spc-table-wrap" id="spcSeamerOutputTableWrap"></div>
+          </div>
+          <div id="spcSeamerChartsWrap" class="spc-charts-wrap"></div>
+        </div>
       </div>
 
     </div>
@@ -319,6 +347,8 @@
 
 </div>
 
+<!-- Chart.js (dipakai grafik tren SPC Seamer) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- Firebase (Compat SDK — cocok dipakai tanpa bundler) -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
