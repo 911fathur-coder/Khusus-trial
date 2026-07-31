@@ -153,19 +153,27 @@ class App{
       devDailySummary:$('devDailySummary'), devLogListArea:$('devLogListArea'),
       offlineBanner:$('offlineBanner'),
       appMenuBtn:$('appMenuBtn'),
-      doubleSeamApp:$('doubleSeamApp'), timingOutputApp:$('timingOutputApp'),
+      doubleSeamApp:$('doubleSeamApp'), timingOutputApp:$('timingOutputApp'), spcSeamerApp:$('spcSeamerApp'),
       timingStart:$('timingStart'), timingEnd:$('timingEnd'),
       timingPoints:$('timingPoints'), timingMin:$('timingMin'), timingMax:$('timingMax'),
       timingBreakStart:$('timingBreakStart'), timingBreakEnd:$('timingBreakEnd'),
       timingGenerateBtn:$('timingGenerateBtn'), timingResetBtn:$('timingResetBtn'),
       timingGapMapWrap:$('timingGapMapWrap'), timingGapMap:$('timingGapMap'),
-      timingResultList:$('timingResultList'), timingShareBtn:$('timingShareBtn')
+      timingResultList:$('timingResultList'),
+      spcSeamerParamSegmented:$('spcSeamerParamSegmented'), spcSeamerParamIndicator:$('spcSeamerParamIndicator'),
+      spcSeamerInputTitle:$('spcSeamerInputTitle'), spcSeamerInstruction:$('spcSeamerInstruction'),
+      spcSeamerInputTableWrap:$('spcSeamerInputTableWrap'),
+      spcSeamerResetBtn:$('spcSeamerResetBtn'), spcSeamerGenerateBtn:$('spcSeamerGenerateBtn'), spcSeamerPdfBtn:$('spcSeamerPdfBtn'),
+      spcSeamerOutputWrap:$('spcSeamerOutputWrap'), spcSeamerOutputTitle:$('spcSeamerOutputTitle'),
+      spcSeamerOutputTableWrap:$('spcSeamerOutputTableWrap'), spcSeamerChartsWrap:$('spcSeamerChartsWrap')
     };
     this.state = { mode:'3', body:0.16, eoe:0.22 };
     this.bodyOptions = ['0.15','0.16','0.17'];
     this.eoeOptions = ['0.16','0.17','0.18','0.19','0.20','0.21','0.22','0.23','0.24'];
     this.activeApp = 'doubleseam';
     this.timingScheduleData = [];
+    this.spcSeamerParam = 'thickness';
+    this.spcSeamerCharts = {};
   }
 
   init(){
@@ -183,10 +191,11 @@ class App{
     this.initDevAccess();
     this.initAppSwitcher();
     this.initTimingOutput();
+    this.initSpcSeamer();
     this.initOfflineIndicator();
     this.flushPendingLogs();
-    requestAnimationFrame(()=>{ this.layoutIndicator(this.dom.tabSegmented, this.dom.tabIndicator); this.layoutIndicator(this.dom.settingsSegmented, this.dom.settingsIndicator); });
-    window.addEventListener('resize', ()=>{ this.layoutIndicator(this.dom.tabSegmented, this.dom.tabIndicator); this.layoutIndicator(this.dom.settingsSegmented, this.dom.settingsIndicator); });
+    requestAnimationFrame(()=>{ this.layoutIndicator(this.dom.tabSegmented, this.dom.tabIndicator); this.layoutIndicator(this.dom.settingsSegmented, this.dom.settingsIndicator); this.layoutIndicator(this.dom.spcSeamerParamSegmented, this.dom.spcSeamerParamIndicator); });
+    window.addEventListener('resize', ()=>{ this.layoutIndicator(this.dom.tabSegmented, this.dom.tabIndicator); this.layoutIndicator(this.dom.settingsSegmented, this.dom.settingsIndicator); this.layoutIndicator(this.dom.spcSeamerParamSegmented, this.dom.spcSeamerParamIndicator); });
     window.addEventListener('online', ()=>this.flushPendingLogs());
   }
 
@@ -405,7 +414,7 @@ class App{
     { id:'doubleseam', title:'Double Seam', desc:'Kalkulator inspeksi double seam', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2.5"/><path d="M7 7v3M11 7v4M15 7v3M19 7v4"/></svg>', ready:true },
     { id:'timing', title:'Setting Timing Output', desc:'Jadwal cek QC per shift', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>', ready:true },
     { id:'spc-slitter', title:'SPC Slitter', desc:'Segera hadir', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>', ready:false },
-    { id:'spc-seamer', title:'SPC Seamer', desc:'Segera hadir', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2.5"/><path d="M7 7v3M11 7v4M15 7v3M19 7v4"/></svg>', ready:false }
+    { id:'spc-seamer', title:'SPC Seamer', desc:'Tren statistik parameter seamer', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg>', ready:true }
   ];
 
   initAppSwitcher(){
@@ -440,11 +449,17 @@ class App{
     this.activeApp = appId;
     this.dom.doubleSeamApp.classList.toggle('hidden', appId!=='doubleseam');
     this.dom.timingOutputApp.classList.toggle('hidden', appId!=='timing');
+    this.dom.spcSeamerApp.classList.toggle('hidden', appId!=='spc-seamer');
     if(appId==='doubleseam') this.applyDoubleSeamHeader();
     else if(appId==='timing'){
       this.dom.largeTitle.textContent = 'Setting Timing Output';
       this.dom.navCompactTitle.textContent = 'Timing Output';
       this.dom.largeTitleSub.textContent = 'QC SCHEDULE · PRESENTED BY FATHUR';
+      this.dom.clearHistoryBtn.classList.remove('visible');
+    } else if(appId==='spc-seamer'){
+      this.dom.largeTitle.textContent = 'SPC Seamer';
+      this.dom.navCompactTitle.textContent = 'SPC Seamer';
+      this.dom.largeTitleSub.textContent = 'TREN STATISTIK · PRESENTED BY FATHUR';
       this.dom.clearHistoryBtn.classList.remove('visible');
     }
     this.closeSheet();
@@ -468,7 +483,6 @@ class App{
   initTimingOutput(){
     this.dom.timingGenerateBtn.addEventListener('click', ()=>this.timingCalculate());
     this.dom.timingResetBtn.addEventListener('click', ()=>this.timingReset());
-    this.dom.timingShareBtn.addEventListener('click', ()=>this.timingCopyReport());
   }
 
   timingParseTime(str){
@@ -547,7 +561,6 @@ class App{
 
   timingRenderResults(schedule, start, end){
     this.dom.timingGapMapWrap.classList.remove('hidden');
-    this.dom.timingShareBtn.classList.remove('hidden');
     this.dom.timingGapMap.innerHTML = '';
 
     const totalW = end - start;
@@ -569,25 +582,211 @@ class App{
     setTimeout(()=>{ this.dom.timingResultList.scrollIntoView({behavior:'smooth', block:'start'}); }, 60);
   }
 
-  timingCopyReport(){
-    if(this.timingScheduleData.length===0) return;
-    let txt = "*QC CHECK SCHEDULE*\n--------------------\n";
-    this.timingScheduleData.forEach(d=>{ txt += "• "+d.tag+": *"+d.val+"*\n"; });
-    txt += "--------------------\n_Precision Tool for Leader Fathur_";
-    navigator.clipboard.writeText(txt).then(()=>{
-      this.openAlert('Tersalin!', 'Format laporan WhatsApp sudah siap di-paste.', [{text:'Oke', style:'cancel'}]);
-      vibrate(10);
-    }).catch(()=>{
-      this.showToast('Gagal menyalin — coba lagi');
-    });
-  }
-
   timingReset(){
     this.timingScheduleData = [];
     this.dom.timingResultList.innerHTML = '';
-    this.dom.timingShareBtn.classList.add('hidden');
     this.dom.timingGapMapWrap.classList.add('hidden');
     this.dom.timingGapMap.innerHTML = '';
+    vibrate(10);
+  }
+
+  /* =========================================================
+     SPC SEAMER — port dari app standalone. Algoritma simulasi
+     tren (mean-reversion random walk di spcSeamerGenerateStableValue)
+     dan seluruh rumus parsing nilai TIDAK diubah, hanya dipasangkan
+     ke komponen UI app utama + tema warna ikut light/dark mode.
+     ========================================================= */
+  SPC_SEAMER_PARAM_SPECS = {
+    thickness: { title:'Seam Thickness', basePrefix:1, prefixStr:'1.', minLimit:1.15, maxLimit:1.35, stepSize:0.02, maxStep:0.018, fallbackValues:[1.27,1.25,1.29] },
+    length: { title:'Seam Length', basePrefix:2, prefixStr:'2.', minLimit:2.50, maxLimit:2.80, stepSize:0.03, maxStep:0.025, fallbackValues:[2.65,2.62,2.68] },
+    countersink: { title:'Countersink', basePrefix:5, prefixStr:'5.', minLimit:5.13, maxLimit:5.48, stepSize:0.03, maxStep:0.025, fallbackValues:[5.30,5.27,5.33] }
+  };
+  SPC_SEAMER_ROW_LABELS = ['A1','B1','C1','A2','B2','C2','A3','B3','C3','A4','B4','C4'];
+
+  initSpcSeamer(){
+    this.initSegmented(this.dom.spcSeamerParamSegmented, this.dom.spcSeamerParamIndicator, (p)=>this.spcSeamerSwitchParam(p), 'data-param');
+    this.dom.spcSeamerResetBtn.addEventListener('click', ()=>this.spcSeamerReset());
+    this.dom.spcSeamerGenerateBtn.addEventListener('click', ()=>this.spcSeamerGenerate());
+    this.dom.spcSeamerPdfBtn.addEventListener('click', ()=>this.showToast('Export PDF form otomatis segera hadir'));
+    this.spcSeamerRenderInputTable();
+  }
+
+  spcSeamerGetCssVar(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  spcSeamerSwitchParam(paramKey){
+    this.spcSeamerParam = paramKey;
+    const spec = this.SPC_SEAMER_PARAM_SPECS[paramKey];
+    this.dom.spcSeamerInputTitle.textContent = 'Input Pengukuran ('+spec.title+')';
+    this.dom.spcSeamerOutputTitle.textContent = 'Master Preview ('+spec.title+')';
+    this.dom.spcSeamerInstruction.textContent = 'Ketik 2 angka di belakang koma (contoh: 27 untuk '+spec.prefixStr+'27)';
+    this.spcSeamerReset();
+    this.spcSeamerRenderInputTable();
+  }
+
+  /* Proteksi input hanya angka & pindah fokus otomatis: turun A->B->C lalu ke head berikutnya */
+  spcSeamerHandleAutoTab(e){
+    e.target.value = e.target.value.replace(/[^0-9]/g,'');
+    if(e.target.value.length===2){
+      const row = e.target.dataset.row, col = parseInt(e.target.dataset.col,10);
+      let nextRow = '', nextCol = col;
+      if(row==='A') nextRow='B';
+      else if(row==='B') nextRow='C';
+      else if(row==='C'){ if(col<8){ nextRow='A'; nextCol=col+1; } }
+      if(nextRow!==''){
+        const nextInput = this.dom.spcSeamerInputTableWrap.querySelector('input[data-row="'+nextRow+'"][data-col="'+nextCol+'"]');
+        if(nextInput){ nextInput.focus(); nextInput.select(); } else { e.target.blur(); }
+      } else { e.target.blur(); }
+    }
+  }
+
+  spcSeamerRenderInputTable(){
+    const spec = this.SPC_SEAMER_PARAM_SPECS[this.spcSeamerParam];
+    let html = '<table class="spc-table"><thead><tr><th>Titik</th>';
+    for(let i=1;i<=8;i++) html += '<th>H'+i+'</th>';
+    html += '</tr></thead><tbody>';
+    ['A','B','C'].forEach(point=>{
+      const dotClass = point==='A' ? 'spc-dot-a' : (point==='B' ? 'spc-dot-b' : 'spc-dot-c');
+      html += '<tr><td class="spc-row-label"><span class="spc-dot '+dotClass+'"></span>'+point+'</td>';
+      for(let i=1;i<=8;i++){
+        html += '<td><div class="spc-cell-wrap"><span class="spc-cell-prefix">'+spec.prefixStr+'</span>'
+          + '<input type="text" class="spc-cell-input spc-seamer-input" data-row="'+point+'" data-col="'+i+'" placeholder="00" inputmode="numeric" maxlength="2"></div></td>';
+      }
+      html += '</tr>';
+    });
+    html += '</tbody></table>';
+    this.dom.spcSeamerInputTableWrap.innerHTML = html;
+    this.dom.spcSeamerInputTableWrap.querySelectorAll('.spc-seamer-input').forEach(inp=>{
+      inp.addEventListener('input', (e)=>this.spcSeamerHandleAutoTab(e));
+    });
+  }
+
+  /* Algoritma penyeimbang (mean reversion) — nilai berikutnya "ditarik" balik
+     ke arah nilai anchor (titik awal) supaya tren tetap stabil di sekitar
+     spesifikasi, bukan random murni. */
+  spcSeamerGenerateStableValue(currentValue, anchor, maxDelta, minSpec, maxSpec){
+    const reversionStrength = 0.55;
+    const randomNoise = (Math.random() * (maxDelta * 2)) - maxDelta;
+    const pullBack = (anchor - currentValue) * reversionStrength;
+    let nextVal = currentValue + randomNoise + pullBack;
+    if(nextVal < minSpec) nextVal = minSpec + (Math.random() * (maxDelta * 0.4));
+    if(nextVal > maxSpec) nextVal = maxSpec - (Math.random() * (maxDelta * 0.4));
+    return parseFloat(nextVal.toFixed(3));
+  }
+
+  spcSeamerGetParsedValue(row, col){
+    const el = this.dom.spcSeamerInputTableWrap.querySelector('input[data-row="'+row+'"][data-col="'+col+'"]');
+    if(!el || el.value==='') return null;
+    const spec = this.SPC_SEAMER_PARAM_SPECS[this.spcSeamerParam];
+    const rawVal = parseFloat(el.value);
+    return spec.basePrefix + (rawVal/100);
+  }
+
+  spcSeamerGenerate(){
+    const spec = this.SPC_SEAMER_PARAM_SPECS[this.spcSeamerParam];
+    const inputs = this.dom.spcSeamerInputTableWrap.querySelectorAll('.spc-seamer-input');
+    const hasData = Array.from(inputs).some(inp=>inp.value!=='');
+    if(!hasData){ this.openAlert('Data Kosong', 'Isi data pengukurannya dulu ya, Bos!', [{text:'Oke', style:'cancel'}]); return; }
+
+    this.dom.spcSeamerOutputWrap.classList.remove('hidden');
+    this.dom.spcSeamerChartsWrap.innerHTML = '';
+    Object.keys(this.spcSeamerCharts).forEach(key=>{ this.spcSeamerCharts[key].destroy(); delete this.spcSeamerCharts[key]; });
+
+    const compiledData = {};
+    let tableHtml = '<table class="spc-table spc-out-table"><thead><tr><th>Titik</th>';
+    for(let i=1;i<=8;i++) tableHtml += '<th>H'+i+'</th>';
+    tableHtml += '</tr></thead><tbody>';
+
+    for(let i=1;i<=8;i++){
+      const a1 = this.spcSeamerGetParsedValue('A',i) ?? spec.fallbackValues[0];
+      const b1 = this.spcSeamerGetParsedValue('B',i) ?? spec.fallbackValues[1];
+      const c1 = this.spcSeamerGetParsedValue('C',i) ?? spec.fallbackValues[2];
+
+      const a2 = this.spcSeamerGenerateStableValue(a1, a1, spec.maxStep, spec.minLimit, spec.maxLimit);
+      const a3 = this.spcSeamerGenerateStableValue(a2, a1, spec.maxStep, spec.minLimit, spec.maxLimit);
+      const a4 = this.spcSeamerGenerateStableValue(a3, a1, spec.maxStep, spec.minLimit, spec.maxLimit);
+
+      const b2 = this.spcSeamerGenerateStableValue(b1, b1, spec.maxStep, spec.minLimit, spec.maxLimit);
+      const b3 = this.spcSeamerGenerateStableValue(b2, b1, spec.maxStep, spec.minLimit, spec.maxLimit);
+      const b4 = this.spcSeamerGenerateStableValue(b3, b1, spec.maxStep, spec.minLimit, spec.maxLimit);
+
+      const c2 = this.spcSeamerGenerateStableValue(c1, c1, spec.maxStep, spec.minLimit, spec.maxLimit);
+      const c3 = this.spcSeamerGenerateStableValue(c2, c1, spec.maxStep, spec.minLimit, spec.maxLimit);
+      const c4 = this.spcSeamerGenerateStableValue(c3, c1, spec.maxStep, spec.minLimit, spec.maxLimit);
+
+      compiledData[i] = [a1,b1,c1,a2,b2,c2,a3,b3,c3,a4,b4,c4];
+
+      this.dom.spcSeamerChartsWrap.insertAdjacentHTML('beforeend',
+        '<div class="spc-charts-wrap-item">'
+        + '<div class="spc-chart-title">HEAD '+i+' TREN</div>'
+        + '<div class="card spc-chart-card"><div class="spc-chart-canvas-wrap"><canvas id="spcSeamerChart'+i+'"></canvas></div></div>'
+        + '</div>'
+      );
+    }
+
+    // Render tabel: lewati A1/B1/C1 (baris input asli), tampilkan titik hasil generate saja
+    this.SPC_SEAMER_ROW_LABELS.forEach((lbl, rIdx)=>{
+      if(rIdx<3) return;
+      tableHtml += '<tr><td class="spc-out-row-label">'+lbl+'</td>';
+      for(let i=1;i<=8;i++) tableHtml += '<td>'+compiledData[i][rIdx].toFixed(2)+'</td>';
+      tableHtml += '</tr>';
+      if(lbl.includes('C') && rIdx<this.SPC_SEAMER_ROW_LABELS.length-1){
+        tableHtml += '<tr class="spc-empty-divider"><td colspan="9"></td></tr>';
+      }
+    });
+    tableHtml += '</tbody></table>';
+    this.dom.spcSeamerOutputTableWrap.innerHTML = tableHtml;
+
+    for(let i=1;i<=8;i++){
+      this.spcSeamerCreateChart('spcSeamerChart'+i, this.SPC_SEAMER_ROW_LABELS, compiledData[i], 'Head '+i, spec);
+    }
+
+    vibrate(10);
+    setTimeout(()=>{ this.dom.spcSeamerOutputWrap.scrollIntoView({behavior:'smooth', block:'start'}); }, 60);
+  }
+
+  spcSeamerCreateChart(canvasId, labels, data, label, spec){
+    const canvas = document.getElementById(canvasId);
+    if(!canvas || typeof Chart==='undefined') return;
+    const accent = this.spcSeamerGetCssVar('--accent') || '#FF8F1F';
+    const labelColor = this.spcSeamerGetCssVar('--label-2') || '#6C6C70';
+    const gridColor = this.spcSeamerGetCssVar('--separator') || 'rgba(60,60,67,.22)';
+    const ctx = canvas.getContext('2d');
+    this.spcSeamerCharts[canvasId] = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets: [{
+        label, data,
+        borderColor: accent, borderWidth: 3, tension: 0.1, fill: false,
+        pointBackgroundColor: this.spcSeamerGetCssVar('--bg-elev') || '#fff',
+        pointBorderColor: accent, pointBorderWidth: 2, pointRadius: 4, pointHoverRadius: 6
+      }] },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y: {
+            min: spec.minLimit, max: spec.maxLimit,
+            title: { display:true, text: spec.title.toUpperCase()+' (mm)', color: labelColor, font: { weight:'700', size:9 } },
+            ticks: { stepSize: spec.stepSize, autoSkip:false, color: labelColor, font:{ size:9 }, callback: val=>val.toFixed(2) },
+            grid: { color: gridColor, drawBorder:false }
+          },
+          x: { ticks: { color: labelColor, font:{ weight:'700', size:9 } }, grid: { display:false } }
+        },
+        plugins: {
+          legend: { display:false },
+          tooltip: { backgroundColor:'rgba(26,32,44,0.9)', padding:8, borderRadius:8, callbacks:{ label: ctx=>' '+ctx.dataset.label+': '+ctx.parsed.y.toFixed(2)+' mm' } }
+        }
+      }
+    });
+  }
+
+  spcSeamerReset(){
+    this.dom.spcSeamerInputTableWrap.querySelectorAll('.spc-seamer-input').forEach(inp=>inp.value='');
+    this.dom.spcSeamerOutputWrap.classList.add('hidden');
+    this.dom.spcSeamerOutputTableWrap.innerHTML = '';
+    this.dom.spcSeamerChartsWrap.innerHTML = '';
+    Object.keys(this.spcSeamerCharts).forEach(key=>this.spcSeamerCharts[key].destroy());
+    this.spcSeamerCharts = {};
     vibrate(10);
   }
 
