@@ -264,6 +264,48 @@
         </div>
       </div>
 
+      <!-- ============ APP: SPC SLITTER ============ -->
+      <div id="spcSlitterApp" class="hidden">
+        <div class="segmented" id="spcSlitterParamSegmented">
+          <div class="segmented-indicator" id="spcSlitterParamIndicator"></div>
+          <button class="segmented-opt active" data-param="height">BB Height</button>
+          <button class="segmented-opt" data-param="length">BB Length</button>
+          <button class="segmented-opt" data-param="unsquarness">Unsquarness</button>
+        </div>
+
+        <div class="group-header-row" id="spcSlitterInputTitleRow">
+          <span class="group-header" id="spcSlitterInputTitle" style="padding:0;">Input (Bodyblank Height)</span>
+          <label class="ios-switch-wrap" id="spcSlitterLajur9Wrapper">
+            <span class="ios-switch-label">Lajur 9</span>
+            <span class="ios-switch">
+              <input type="checkbox" id="spcSlitterLajur9Toggle">
+              <span class="ios-switch-slider"></span>
+            </span>
+          </label>
+        </div>
+        <div class="card" style="padding:14px 10px;">
+          <p class="spc-instruction" id="spcSlitterInstruction">Ketik 2 angka di belakang koma (contoh: 65 untuk 107.65)</p>
+          <div class="spc-table-wrap" id="spcSlitterInputTableWrap"></div>
+        </div>
+
+        <div class="btn-row">
+          <button class="btn btn-secondary" id="spcSlitterResetBtn">Reset</button>
+          <button class="btn btn-primary" id="spcSlitterGenerateBtn">Generate Tren</button>
+        </div>
+        <button class="btn btn-secondary" id="spcSlitterPdfBtn" style="margin-top:6px;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15h6M9 11h6"/></svg>
+          <span>Export ke PDF <span class="btn-soon-tag">Segera Hadir</span></span>
+        </button>
+
+        <div id="spcSlitterOutputWrap" class="hidden">
+          <div class="group-header" id="spcSlitterOutputTitle">Master Preview (Bodyblank Height)</div>
+          <div class="card" style="padding:10px 6px;">
+            <div class="spc-table-wrap" id="spcSlitterOutputTableWrap"></div>
+          </div>
+          <div id="spcSlitterChartsWrap" class="spc-charts-wrap"></div>
+        </div>
+      </div>
+
     </div>
   </div>
 
