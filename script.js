@@ -165,7 +165,15 @@ class App{
       spcSeamerInputTableWrap:$('spcSeamerInputTableWrap'),
       spcSeamerResetBtn:$('spcSeamerResetBtn'), spcSeamerGenerateBtn:$('spcSeamerGenerateBtn'), spcSeamerPdfBtn:$('spcSeamerPdfBtn'),
       spcSeamerOutputWrap:$('spcSeamerOutputWrap'), spcSeamerOutputTitle:$('spcSeamerOutputTitle'),
-      spcSeamerOutputTableWrap:$('spcSeamerOutputTableWrap'), spcSeamerChartsWrap:$('spcSeamerChartsWrap')
+      spcSeamerOutputTableWrap:$('spcSeamerOutputTableWrap'), spcSeamerChartsWrap:$('spcSeamerChartsWrap'),
+      spcSlitterApp:$('spcSlitterApp'),
+      spcSlitterParamSegmented:$('spcSlitterParamSegmented'), spcSlitterParamIndicator:$('spcSlitterParamIndicator'),
+      spcSlitterInputTitle:$('spcSlitterInputTitle'), spcSlitterInstruction:$('spcSlitterInstruction'),
+      spcSlitterLajur9Wrapper:$('spcSlitterLajur9Wrapper'), spcSlitterLajur9Toggle:$('spcSlitterLajur9Toggle'),
+      spcSlitterInputTableWrap:$('spcSlitterInputTableWrap'),
+      spcSlitterResetBtn:$('spcSlitterResetBtn'), spcSlitterGenerateBtn:$('spcSlitterGenerateBtn'), spcSlitterPdfBtn:$('spcSlitterPdfBtn'),
+      spcSlitterOutputWrap:$('spcSlitterOutputWrap'), spcSlitterOutputTitle:$('spcSlitterOutputTitle'),
+      spcSlitterOutputTableWrap:$('spcSlitterOutputTableWrap'), spcSlitterChartsWrap:$('spcSlitterChartsWrap')
     };
     this.state = { mode:'3', body:0.16, eoe:0.22 };
     this.bodyOptions = ['0.15','0.16','0.17'];
@@ -174,6 +182,8 @@ class App{
     this.timingScheduleData = [];
     this.spcSeamerParam = 'thickness';
     this.spcSeamerCharts = {};
+    this.spcSlitterParam = 'height';
+    this.spcSlitterCharts = {};
   }
 
   init(){
@@ -192,10 +202,11 @@ class App{
     this.initAppSwitcher();
     this.initTimingOutput();
     this.initSpcSeamer();
+    this.initSpcSlitter();
     this.initOfflineIndicator();
     this.flushPendingLogs();
-    requestAnimationFrame(()=>{ this.layoutIndicator(this.dom.tabSegmented, this.dom.tabIndicator); this.layoutIndicator(this.dom.settingsSegmented, this.dom.settingsIndicator); this.layoutIndicator(this.dom.spcSeamerParamSegmented, this.dom.spcSeamerParamIndicator); });
-    window.addEventListener('resize', ()=>{ this.layoutIndicator(this.dom.tabSegmented, this.dom.tabIndicator); this.layoutIndicator(this.dom.settingsSegmented, this.dom.settingsIndicator); this.layoutIndicator(this.dom.spcSeamerParamSegmented, this.dom.spcSeamerParamIndicator); });
+    requestAnimationFrame(()=>{ this.layoutIndicator(this.dom.tabSegmented, this.dom.tabIndicator); this.layoutIndicator(this.dom.settingsSegmented, this.dom.settingsIndicator); this.layoutIndicator(this.dom.spcSeamerParamSegmented, this.dom.spcSeamerParamIndicator); this.layoutIndicator(this.dom.spcSlitterParamSegmented, this.dom.spcSlitterParamIndicator); });
+    window.addEventListener('resize', ()=>{ this.layoutIndicator(this.dom.tabSegmented, this.dom.tabIndicator); this.layoutIndicator(this.dom.settingsSegmented, this.dom.settingsIndicator); this.layoutIndicator(this.dom.spcSeamerParamSegmented, this.dom.spcSeamerParamIndicator); this.layoutIndicator(this.dom.spcSlitterParamSegmented, this.dom.spcSlitterParamIndicator); });
     window.addEventListener('online', ()=>this.flushPendingLogs());
   }
 
@@ -413,7 +424,7 @@ class App{
   APPS = [
     { id:'doubleseam', title:'Double Seam', desc:'Kalkulator inspeksi double seam', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="10" rx="2.5"/><path d="M7 7v3M11 7v4M15 7v3M19 7v4"/></svg>', ready:true },
     { id:'timing', title:'Setting Timing Output', desc:'Jadwal cek QC per shift', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></svg>', ready:true },
-    { id:'spc-slitter', title:'SPC Slitter', desc:'Segera hadir', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4M4.9 19.1l2.8-2.8M16.3 7.7l2.8-2.8"/></svg>', ready:false },
+    { id:'spc-slitter', title:'SPC Slitter', desc:'Tren statistik bodyblank & unsquarness', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3v18M10 3v18M15 3v18M20 3v18"/></svg>', ready:true },
     { id:'spc-seamer', title:'SPC Seamer', desc:'Tren statistik parameter seamer', icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-9"/><path d="M15 7h5v5"/></svg>', ready:true }
   ];
 
@@ -450,6 +461,7 @@ class App{
     this.dom.doubleSeamApp.classList.toggle('hidden', appId!=='doubleseam');
     this.dom.timingOutputApp.classList.toggle('hidden', appId!=='timing');
     this.dom.spcSeamerApp.classList.toggle('hidden', appId!=='spc-seamer');
+    this.dom.spcSlitterApp.classList.toggle('hidden', appId!=='spc-slitter');
     if(appId==='doubleseam') this.applyDoubleSeamHeader();
     else if(appId==='timing'){
       this.dom.largeTitle.textContent = 'Setting Timing Output';
@@ -459,6 +471,11 @@ class App{
     } else if(appId==='spc-seamer'){
       this.dom.largeTitle.textContent = 'SPC Seamer';
       this.dom.navCompactTitle.textContent = 'SPC Seamer';
+      this.dom.largeTitleSub.textContent = 'TREN STATISTIK · PRESENTED BY FATHUR';
+      this.dom.clearHistoryBtn.classList.remove('visible');
+    } else if(appId==='spc-slitter'){
+      this.dom.largeTitle.textContent = 'SPC Slitter';
+      this.dom.navCompactTitle.textContent = 'SPC Slitter';
       this.dom.largeTitleSub.textContent = 'TREN STATISTIK · PRESENTED BY FATHUR';
       this.dom.clearHistoryBtn.classList.remove('visible');
     }
@@ -787,6 +804,371 @@ class App{
     this.dom.spcSeamerChartsWrap.innerHTML = '';
     Object.keys(this.spcSeamerCharts).forEach(key=>this.spcSeamerCharts[key].destroy());
     this.spcSeamerCharts = {};
+    vibrate(10);
+  }
+
+  /* =========================================================
+     SPC SLITTER — port dari app standalone. Tiga parameter beda
+     struktur (BB Height/Length pakai toggle Lajur 9; Unsquarness
+     pakai layout Kanan/Kiri A/B per pocket). Algoritma simulasi
+     tren, pewarnaan status titik (getStatusColor), dan plugin
+     garis pembatas pocket di grafik gabungan TIDAK diubah.
+     ========================================================= */
+  SPC_SLITTER_PARAM_SPECS = {
+    height: { title:'Bodyblank Height', basePrefix:107, prefixStr:'107.', minLimit:107.65, maxLimit:107.75, stepSize:0.01, maxStep:0.007, fallbackVal:70 },
+    length: { title:'Bodyblank Length', basePrefix:165, prefixStr:'165.', minLimit:165.15, maxLimit:165.25, stepSize:0.01, maxStep:0.007, fallbackVal:20 },
+    unsquarness: { title:'Unsquarness', basePrefix:0, prefixStr:'', minLimit:-0.08, maxLimit:0.08, stepSize:0.01, maxStep:0.015, fallbackVal:0 }
+  };
+
+  initSpcSlitter(){
+    this.initSegmented(this.dom.spcSlitterParamSegmented, this.dom.spcSlitterParamIndicator, (p)=>this.spcSlitterSwitchParam(p), 'data-param');
+    this.dom.spcSlitterResetBtn.addEventListener('click', ()=>this.spcSlitterReset());
+    this.dom.spcSlitterGenerateBtn.addEventListener('click', ()=>this.spcSlitterGenerate());
+    this.dom.spcSlitterPdfBtn.addEventListener('click', ()=>this.showToast('Export PDF form otomatis segera hadir'));
+    this.dom.spcSlitterLajur9Toggle.addEventListener('change', ()=>this.spcSlitterRenderInputTable());
+    this.spcSlitterRegisterPocketDividerPlugin();
+    this.spcSlitterRenderInputTable();
+  }
+
+  /* Plugin Chart.js kustom: gambar garis putus-putus pembatas antar pocket
+     + label "POCKET N" di grafik gabungan Unsquarness (48 titik data).
+     Didaftarkan sekali saja secara global ke Chart.js. */
+  spcSlitterRegisterPocketDividerPlugin(){
+    if(this._pocketDividerRegistered || typeof Chart==='undefined') return;
+    this._pocketDividerRegistered = true;
+    const self = this;
+    Chart.register({
+      id: 'pocketDivider',
+      afterDraw: (chart)=>{
+        if(chart.data.labels.length !== 48) return;
+        const { ctx, chartArea: { top, bottom }, scales: { x } } = chart;
+        ctx.save();
+        ctx.strokeStyle = self.spcSeamerGetCssVar('--label-3') || '#a0aec0';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([5,5]);
+        for(let i=1;i<=5;i++){
+          const xPos = (x.getPixelForTick(i*8-1) + x.getPixelForTick(i*8)) / 2;
+          ctx.beginPath(); ctx.moveTo(xPos, top); ctx.lineTo(xPos, bottom); ctx.stroke();
+        }
+        ctx.fillStyle = self.spcSeamerGetCssVar('--label') || '#4a5568';
+        ctx.font = 'bold 11px system-ui';
+        ctx.textAlign = 'center';
+        for(let i=0;i<6;i++){
+          const tickMid = i*8+3;
+          const xPos = x.getPixelForTick(tickMid) + (x.getPixelForTick(tickMid+1)-x.getPixelForTick(tickMid))/2;
+          ctx.fillText('POCKET '+(i+1), xPos, top+15);
+        }
+        ctx.restore();
+      }
+    });
+  }
+
+  spcSlitterSwitchParam(paramKey){
+    this.spcSlitterParam = paramKey;
+    const spec = this.SPC_SLITTER_PARAM_SPECS[paramKey];
+    this.dom.spcSlitterInputTitle.textContent = 'Input ('+spec.title+')';
+    this.dom.spcSlitterOutputTitle.textContent = 'Master Preview ('+spec.title+')';
+    if(paramKey==='unsquarness'){
+      this.dom.spcSlitterLajur9Wrapper.classList.add('hidden');
+      this.dom.spcSlitterInstruction.textContent = 'Ketik nilai (contoh: 5 untuk 0.05, -8 untuk -0.08)';
+    } else {
+      this.dom.spcSlitterLajur9Wrapper.classList.remove('hidden');
+      this.dom.spcSlitterInstruction.textContent = 'Ketik 2 digit belakang koma (contoh: 68 untuk '+spec.prefixStr+'68)';
+    }
+    this.spcSlitterReset();
+    this.spcSlitterRenderInputTable();
+  }
+
+  /* Proteksi input & pindah fokus otomatis — beda alur per parameter:
+     Height/Length turun A->B->C lalu ke lajur berikutnya (menghormati
+     toggle Lajur 9); Unsquarness muter KananA->KananB->KiriA->KiriB
+     lalu ke pocket berikutnya, dan boleh pakai tanda minus. */
+  spcSlitterHandleAutoTab(e){
+    if(this.spcSlitterParam==='unsquarness'){
+      e.target.value = e.target.value.replace(/[^0-9-]/g,'').replace(/(?!^)-/g,'');
+    } else {
+      e.target.value = e.target.value.replace(/[^0-9]/g,'');
+    }
+    const val = e.target.value;
+    const targetLength = (this.spcSlitterParam==='unsquarness' && val.includes('-')) ? 3 : 2;
+    if(val.length===targetLength){
+      const row = e.target.dataset.row, col = parseInt(e.target.dataset.col,10);
+      let nextRow='', nextCol=col;
+      if(this.spcSlitterParam==='height' || this.spcSlitterParam==='length'){
+        const useLajur9 = this.dom.spcSlitterLajur9Toggle.checked;
+        const maxCol = useLajur9 ? 9 : 8;
+        if(row==='A') nextRow='B';
+        else if(row==='B') nextRow='C';
+        else if(row==='C'){ if(col<maxCol){ nextRow='A'; nextCol=col+1; } }
+      } else if(this.spcSlitterParam==='unsquarness'){
+        const maxCol = 6;
+        if(row==='KananA') nextRow='KananB';
+        else if(row==='KananB') nextRow='KiriA';
+        else if(row==='KiriA') nextRow='KiriB';
+        else if(row==='KiriB'){ if(col<maxCol){ nextRow='KananA'; nextCol=col+1; } }
+      }
+      if(nextRow!==''){
+        const nextInput = this.dom.spcSlitterInputTableWrap.querySelector('input[data-row="'+nextRow+'"][data-col="'+nextCol+'"]');
+        if(nextInput){ nextInput.focus(); nextInput.select(); } else { e.target.blur(); }
+      } else { e.target.blur(); }
+    }
+  }
+
+  spcSlitterRenderInputTable(){
+    const spec = this.SPC_SLITTER_PARAM_SPECS[this.spcSlitterParam];
+    let html = '<table class="spc-table"><thead><tr><th>Titik</th>';
+    if(this.spcSlitterParam==='height' || this.spcSlitterParam==='length'){
+      const useLajur9 = this.dom.spcSlitterLajur9Toggle.checked;
+      const totalCols = useLajur9 ? 9 : 8;
+      for(let i=1;i<=totalCols;i++) html += '<th>L'+i+'</th>';
+      html += '</tr></thead><tbody>';
+      ['A','B','C'].forEach(point=>{
+        const dotClass = point==='A' ? 'spc-slitter-dot-a' : (point==='B' ? 'spc-slitter-dot-b' : 'spc-slitter-dot-c');
+        html += '<tr><td class="spc-row-label"><span class="spc-dot '+dotClass+'"></span>'+point+'</td>';
+        for(let i=1;i<=totalCols;i++){
+          html += '<td><div class="spc-cell-wrap"><span class="spc-cell-prefix">'+spec.prefixStr+'</span>'
+            + '<input type="text" class="spc-cell-input spc-slitter-input" data-row="'+point+'" data-col="'+i+'" placeholder="00" inputmode="numeric"></div></td>';
+        }
+        html += '</tr>';
+      });
+    } else {
+      for(let i=1;i<=6;i++) html += '<th>P'+i+'</th>';
+      html += '</tr></thead><tbody>';
+      const rows = [{id:'KananA',label:'Kn A'},{id:'KananB',label:'Kn B'},{id:'KiriA',label:'Kr A'},{id:'KiriB',label:'Kr B'}];
+      rows.forEach(r=>{
+        const dotClass = r.id.includes('A') ? 'spc-slitter-dot-a' : 'spc-slitter-dot-b';
+        html += '<tr><td class="spc-row-label"><span class="spc-dot '+dotClass+'"></span>'+r.label+'</td>';
+        for(let i=1;i<=6;i++){
+          html += '<td><div class="spc-cell-wrap"><input type="text" class="spc-cell-input spc-cell-input-center spc-slitter-input" data-row="'+r.id+'" data-col="'+i+'" placeholder="0" inputmode="text"></div></td>';
+        }
+        html += '</tr>';
+      });
+    }
+    html += '</tbody></table>';
+    this.dom.spcSlitterInputTableWrap.innerHTML = html;
+    this.dom.spcSlitterInputTableWrap.querySelectorAll('.spc-slitter-input').forEach(inp=>{
+      inp.addEventListener('input', (e)=>this.spcSlitterHandleAutoTab(e));
+    });
+  }
+
+  spcSlitterGetParsedValue(row, col){
+    const el = this.dom.spcSlitterInputTableWrap.querySelector('input[data-row="'+row+'"][data-col="'+col+'"]');
+    if(!el || el.value==='') return null;
+    const spec = this.SPC_SLITTER_PARAM_SPECS[this.spcSlitterParam];
+    const rawVal = parseFloat(el.value);
+    return this.spcSlitterParam==='unsquarness' ? rawVal/100 : spec.basePrefix + (rawVal/100);
+  }
+
+  /* Sama seperti algoritma Seamer, bedanya di sini presisi dibulatkan
+     2 desimal (bukan 3) — persis seperti kode aslinya. */
+  spcSlitterGenerateStableValue(currentValue, anchor, maxDelta, minSpec, maxSpec){
+    const reversionStrength = 0.55;
+    const randomNoise = (Math.random() * (maxDelta * 2)) - maxDelta;
+    const pullBack = (anchor - currentValue) * reversionStrength;
+    let nextVal = currentValue + randomNoise + pullBack;
+    if(nextVal < minSpec) nextVal = minSpec + (Math.random() * (maxDelta * 0.4));
+    if(nextVal > maxSpec) nextVal = maxSpec - (Math.random() * (maxDelta * 0.4));
+    return parseFloat(nextVal.toFixed(2));
+  }
+
+  /* Warna status titik di grafik — kuning kalau dekat batas toleransi,
+     hijau kalau aman. Ambang batas literal sesuai spesifikasi asli. */
+  spcSlitterGetStatusColor(val, param){
+    if(val===null || val===undefined) return 'transparent';
+    const v = parseFloat(val.toFixed(2));
+    if(param==='height'){ if(v<=107.66 || v>=107.74) return '#f1c40f'; return '#2ecc71'; }
+    if(param==='length'){ if(v<=165.16 || v>=165.24) return '#f1c40f'; return '#2ecc71'; }
+    if(param==='unsquarness'){ if((v>=-0.08 && v<=-0.05) || (v>=0.05 && v<=0.08)) return '#f1c40f'; return '#2ecc71'; }
+    return '#2ecc71';
+  }
+
+  spcSlitterGenerate(){
+    const spec = this.SPC_SLITTER_PARAM_SPECS[this.spcSlitterParam];
+    const inputs = this.dom.spcSlitterInputTableWrap.querySelectorAll('.spc-slitter-input');
+    const hasData = Array.from(inputs).some(inp=>inp.value!=='');
+    if(!hasData){ this.openAlert('Data Kosong', 'Isi data pengukurannya dulu ya, Bos!', [{text:'Oke', style:'cancel'}]); return; }
+
+    this.dom.spcSlitterOutputWrap.classList.remove('hidden');
+    this.dom.spcSlitterChartsWrap.innerHTML = '';
+    Object.keys(this.spcSlitterCharts).forEach(key=>{ this.spcSlitterCharts[key].destroy(); delete this.spcSlitterCharts[key]; });
+
+    const tableContainer = this.dom.spcSlitterOutputTableWrap;
+    const graphContainer = this.dom.spcSlitterChartsWrap;
+    const accent = this.spcSeamerGetCssVar('--accent') || '#FF8F1F';
+
+    if(this.spcSlitterParam==='height' || this.spcSlitterParam==='length'){
+      const useLajur9 = this.dom.spcSlitterLajur9Toggle.checked;
+      const totalCols = useLajur9 ? 9 : 8;
+      const labels = ['A1','B1','C1','A2','B2','C2','A3','B3','C3','A4','B4','C4'];
+      const compiledData = {};
+
+      let tableHtml = '<table class="spc-table spc-out-table"><thead><tr><th>Titik</th>';
+      for(let i=1;i<=totalCols;i++) tableHtml += '<th>L'+i+'</th>';
+      tableHtml += '</tr></thead><tbody>';
+
+      for(let i=1;i<=totalCols;i++){
+        const fallback = spec.basePrefix + (spec.fallbackVal/100);
+        const a1 = this.spcSlitterGetParsedValue('A',i) ?? fallback;
+        const b1 = this.spcSlitterGetParsedValue('B',i) ?? fallback;
+        const c1 = this.spcSlitterGetParsedValue('C',i) ?? fallback;
+
+        const a2 = this.spcSlitterGenerateStableValue(a1,a1,spec.maxStep,spec.minLimit,spec.maxLimit);
+        const a3 = this.spcSlitterGenerateStableValue(a2,a1,spec.maxStep,spec.minLimit,spec.maxLimit);
+        const a4 = this.spcSlitterGenerateStableValue(a3,a1,spec.maxStep,spec.minLimit,spec.maxLimit);
+
+        const b2 = this.spcSlitterGenerateStableValue(b1,b1,spec.maxStep,spec.minLimit,spec.maxLimit);
+        const b3 = this.spcSlitterGenerateStableValue(b2,b1,spec.maxStep,spec.minLimit,spec.maxLimit);
+        const b4 = this.spcSlitterGenerateStableValue(b3,b1,spec.maxStep,spec.minLimit,spec.maxLimit);
+
+        const c2 = this.spcSlitterGenerateStableValue(c1,c1,spec.maxStep,spec.minLimit,spec.maxLimit);
+        const c3 = this.spcSlitterGenerateStableValue(c2,c1,spec.maxStep,spec.minLimit,spec.maxLimit);
+        const c4 = this.spcSlitterGenerateStableValue(c3,c1,spec.maxStep,spec.minLimit,spec.maxLimit);
+
+        compiledData[i] = [a1,b1,c1,a2,b2,c2,a3,b3,c3,a4,b4,c4];
+
+        graphContainer.insertAdjacentHTML('beforeend',
+          '<div class="spc-charts-wrap-item">'
+          + '<div class="spc-chart-title">LAJUR '+i+' TREN</div>'
+          + '<div class="card spc-chart-card"><div class="spc-chart-canvas-wrap"><canvas id="spcSlitterChart'+i+'"></canvas></div></div>'
+          + '</div>'
+        );
+      }
+
+      labels.forEach((lbl, rIdx)=>{
+        if(rIdx<3) return;
+        tableHtml += '<tr><td class="spc-out-row-label">'+lbl+'</td>';
+        for(let i=1;i<=totalCols;i++) tableHtml += '<td>'+compiledData[i][rIdx].toFixed(2)+'</td>';
+        tableHtml += '</tr>';
+        if(lbl.includes('C') && rIdx<labels.length-1){
+          tableHtml += '<tr class="spc-empty-divider"><td colspan="'+(totalCols+1)+'"></td></tr>';
+        }
+      });
+      tableHtml += '</tbody></table>';
+      tableContainer.innerHTML = tableHtml;
+
+      for(let i=1;i<=totalCols;i++){
+        this.spcSlitterCreateChart('spcSlitterChart'+i, labels, [{label:'Lajur '+i, data:compiledData[i], color:accent}], spec, false);
+      }
+    } else {
+      const compiledData = { KananA:[], KananB:[], KiriA:[], KiriB:[] };
+      ['Kanan','Kiri'].forEach(sisi=>{
+        for(let i=1;i<=6;i++){
+          const a1 = this.spcSlitterGetParsedValue(sisi+'A', i) ?? (spec.fallbackVal/100);
+          const b1 = this.spcSlitterGetParsedValue(sisi+'B', i) ?? (spec.fallbackVal/100);
+          const aData=[a1], bData=[b1];
+          for(let step=0; step<3; step++){
+            aData.push(this.spcSlitterGenerateStableValue(aData[step], a1, spec.maxStep, spec.minLimit, spec.maxLimit));
+            bData.push(this.spcSlitterGenerateStableValue(bData[step], b1, spec.maxStep, spec.minLimit, spec.maxLimit));
+          }
+          compiledData[sisi+'A'][i] = aData;
+          compiledData[sisi+'B'][i] = bData;
+        }
+      });
+
+      let tableHtml = '<table class="spc-table spc-out-table"><thead><tr>'
+        + '<th>Pocket (Sisi)</th>'
+        + '<th>A2</th><th class="spc-block-divider">B2</th>'
+        + '<th>A3</th><th class="spc-block-divider">B3</th>'
+        + '<th>A4</th><th>B4</th>'
+        + '</tr></thead><tbody>';
+
+      for(let p=1;p<=6;p++){
+        ['Kanan','Kiri'].forEach(sisi=>{
+          const lblName = 'Pocket '+p+' ('+(sisi==='Kanan'?'Kn':'Kr')+')';
+          const dataA = compiledData[sisi+'A'][p];
+          const dataB = compiledData[sisi+'B'][p];
+          tableHtml += '<tr><td class="spc-out-row-label">'+lblName+'</td>';
+          for(let step=1; step<4; step++){
+            const divClass = step<3 ? ' class="spc-block-divider"' : '';
+            tableHtml += '<td>'+dataA[step].toFixed(2)+'</td>';
+            tableHtml += '<td'+divClass+'>'+dataB[step].toFixed(2)+'</td>';
+          }
+          tableHtml += '</tr>';
+        });
+        if(p<6) tableHtml += '<tr class="spc-empty-divider"><td colspan="7"></td></tr>';
+      }
+      tableHtml += '</tbody></table>';
+      tableContainer.innerHTML = tableHtml;
+
+      ['Kanan','Kiri'].forEach(sisi=>{
+        const uLabels=[], chartDataA=[], chartDataB=[];
+        for(let i=1;i<=6;i++){
+          const rawA = compiledData[sisi+'A'][i];
+          const rawB = compiledData[sisi+'B'][i];
+          for(let j=0;j<4;j++){
+            uLabels.push('A'+(j+1)); chartDataA.push(rawA[j]); chartDataB.push(null);
+            uLabels.push('B'+(j+1)); chartDataA.push(null); chartDataB.push(rawB[j]);
+          }
+        }
+        const cId = 'spcSlitterChart_'+sisi+'_merged';
+        graphContainer.insertAdjacentHTML('beforeend',
+          '<div class="spc-charts-wrap-item">'
+          + '<div class="spc-chart-title">GRAFIK GABUNGAN 6 POCKET ('+sisi.toUpperCase()+')</div>'
+          + '<div class="card spc-chart-card"><div class="spc-chart-scroll"><div class="spc-chart-canvas-wrap-wide"><canvas id="'+cId+'"></canvas></div></div></div>'
+          + '</div>'
+        );
+        const datasets = [
+          { label:'Sisi A', data:chartDataA, color:accent },
+          { label:'Sisi B', data:chartDataB, color:'#9b59b6' }
+        ];
+        setTimeout(()=>{ this.spcSlitterCreateChart(cId, uLabels, datasets, spec, true); }, 50);
+      });
+    }
+
+    vibrate(10);
+    setTimeout(()=>{ this.dom.spcSlitterOutputWrap.scrollIntoView({behavior:'smooth', block:'start'}); }, 60);
+  }
+
+  spcSlitterCreateChart(canvasId, labels, datasetsData, spec, isWideMode){
+    const canvas = document.getElementById(canvasId);
+    if(!canvas || typeof Chart==='undefined') return;
+    const labelColor = this.spcSeamerGetCssVar('--label-2') || '#718096';
+    const gridColor = this.spcSeamerGetCssVar('--separator') || 'rgba(203,213,224,.5)';
+    const legendColor = this.spcSeamerGetCssVar('--label') || '#4a5568';
+    const ctx = canvas.getContext('2d');
+    const datasets = datasetsData.map(d=>{
+      const pointColors = d.data.map(val=>this.spcSlitterGetStatusColor(val, this.spcSlitterParam));
+      return {
+        label: d.label, data: d.data, borderColor: d.color, borderWidth: 2.5, tension: 0.1, fill: false,
+        pointBackgroundColor: pointColors, pointBorderColor: '#ffffff', pointBorderWidth: 1.5,
+        pointRadius: 5, pointHoverRadius: 7, spanGaps: isWideMode,
+        segment: isWideMode ? {
+          borderColor: (segCtx)=>{
+            if(Math.floor(segCtx.p0DataIndex/8) !== Math.floor(segCtx.p1DataIndex/8)) return 'transparent';
+            return d.color;
+          }
+        } : undefined
+      };
+    });
+    this.spcSlitterCharts[canvasId] = new Chart(ctx, {
+      type: 'line',
+      data: { labels, datasets },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        scales: {
+          y: {
+            min: spec.minLimit, max: spec.maxLimit,
+            title: { display:true, text: spec.title.toUpperCase()+' (mm)', color:labelColor, font:{weight:'700',size:9} },
+            ticks: { stepSize: spec.stepSize, autoSkip:false, color:labelColor, font:{size:9}, callback: val=>val.toFixed(2) },
+            grid: { color: gridColor, drawBorder:false }
+          },
+          x: { ticks: { color:labelColor, font:{weight:'700',size:9} }, grid: { display:false } }
+        },
+        plugins: {
+          legend: { display:true, labels:{ color:legendColor, font:{size:10,weight:'600'}, usePointStyle:true } },
+          tooltip: { backgroundColor:'rgba(26,32,44,0.9)', padding:8, borderRadius:8, callbacks:{ label: tctx=>' '+tctx.dataset.label+': '+tctx.parsed.y.toFixed(2) } }
+        }
+      }
+    });
+  }
+
+  spcSlitterReset(){
+    this.dom.spcSlitterInputTableWrap.querySelectorAll('.spc-slitter-input').forEach(inp=>inp.value='');
+    this.dom.spcSlitterOutputWrap.classList.add('hidden');
+    this.dom.spcSlitterOutputTableWrap.innerHTML = '';
+    this.dom.spcSlitterChartsWrap.innerHTML = '';
+    Object.keys(this.spcSlitterCharts).forEach(key=>this.spcSlitterCharts[key].destroy());
+    this.spcSlitterCharts = {};
     vibrate(10);
   }
 
