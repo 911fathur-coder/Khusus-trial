@@ -643,6 +643,10 @@ html[data-theme="dark"] .icon-moon{opacity:1;transform:rotate(0deg) scale(1);}
 
 .btn-soon-tag{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;background:var(--bg-fill-strong);color:var(--label-3);padding:2px 7px;border-radius:100px;margin-left:4px;}
 
+.spc-check-list{display:flex;flex-direction:column;gap:8px;}
+.spc-check-row{display:flex;align-items:center;gap:9px;font-size:13.5px;font-weight:600;}
+.spc-check-row input{width:18px;height:18px;accent-color:var(--accent);flex-shrink:0;}
+
 /* ---------- group header row with trailing control (spc slitter toggle) ---------- */
 .group-header-row{display:flex;align-items:center;justify-content:space-between;padding:0 14px 7px;gap:10px;}
 .group-header-row .group-header{padding:0;}
