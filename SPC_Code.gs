@@ -1,5 +1,5 @@
 /* ==========================================================================
-   SPC SHEETS CONFIG — Export SPC Seamer & SPC Slitter
+   SPC CONFIG — Export SPC Seamer & SPC Slitter
    ==========================================================================
    Setelah kamu deploy SPC_Code.gs sebagai Web App (lihat SPC_SHEETS_SETUP.md),
    Google akan kasih URL yang bentuknya seperti:
