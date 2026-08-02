@@ -12,4 +12,4 @@
    SPC_OTB_BARU (sheet "SEAMER 52 Warna" & "SLITTER 52 KURMA 107.70").
    ========================================================================== */
 
-window.SPC_SHEETS_WEBAPP_URL = https://script.google.com/macros/s/AKfycbzX61d4xyBDXLg_c1qjnaAymT-6ftlfAW8jFfD6GjMKwICKQcj1Z-74GFe9lhmet21d/exec
+window.SPC_SHEETS_WEBAPP_URL = " https://script.google.com/macros/s/AKfycbzX61d4xyBDXLg_c1qjnaAymT-6ftlfAW8jFfD6GjMKwICKQcj1Z-74GFe9lhmet21d/exec ";
