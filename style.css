@@ -481,6 +481,13 @@ html[data-theme="dark"] .icon-moon{opacity:1;transform:rotate(0deg) scale(1);}
 .picker-opt svg{width:18px;height:18px;color:var(--accent);opacity:0;transition:opacity var(--t-fast) ease;}
 .picker-opt.selected svg{opacity:1;}
 
+.blocked-device-row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:13px 4px;border-bottom:1px solid var(--separator);}
+.blocked-device-row:last-child{border-bottom:none;}
+.blocked-device-info{display:flex;flex-direction:column;gap:2px;min-width:0;}
+.blocked-device-label{font-weight:700;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.blocked-device-date{font-size:11px;color:var(--label-3);font-family:var(--font-mono);}
+.blocked-device-unblock{flex-shrink:0;padding:9px 14px;font-size:12.5px;width:auto;}
+
 .formula-card{background:var(--bg-fill);border-radius:14px;padding:16px;margin-bottom:6px;}
 .formula-label{font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--label-2);display:block;margin-bottom:8px;}
 .formula-math{font-family:var(--font-mono);font-size:13px;display:block;margin-bottom:12px;color:var(--accent);font-weight:600;word-break:break-word;}
@@ -489,11 +496,11 @@ html[data-theme="dark"] .icon-moon{opacity:1;transform:rotate(0deg) scale(1);}
 .formula-result .rv{font-family:var(--font-mono);font-size:19px;font-weight:800;color:var(--success);}
 
 /* ---------- alert ---------- */
-.alert-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:400;opacity:0;pointer-events:none;transition:opacity var(--t-fast) ease;}
+.alert-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.42);z-index:700;opacity:0;pointer-events:none;transition:opacity var(--t-fast) ease;}
 .alert-backdrop.show{opacity:1;pointer-events:auto;}
 .alert-box{
   position:fixed;left:50%;top:50%;transform:translate(-50%,-50%) scale(.85);width:270px;
-  background:var(--bg-elev);border-radius:18px;z-index:401;opacity:0;pointer-events:none;
+  background:var(--bg-elev);border-radius:18px;z-index:701;opacity:0;pointer-events:none;
   box-shadow:var(--shadow-pop);overflow:hidden;transition:transform var(--t-fast) var(--spring),opacity var(--t-fast) ease;
 }
 .alert-box.show{transform:translate(-50%,-50%) scale(1);opacity:1;pointer-events:auto;}
@@ -541,6 +548,22 @@ html[data-theme="dark"] .icon-moon{opacity:1;transform:rotate(0deg) scale(1);}
 .dev-login-error{font-size:12px;color:var(--danger);font-weight:600;min-height:16px;}
 
 /* ---------- developer panel (fullscreen log dashboard) ---------- */
+/* ---------- device blocked screen (paling atas dari semua layer) ---------- */
+.device-blocked-screen{
+  display:none;position:fixed;inset:0;z-index:900;background:var(--bg);
+  flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:32px;
+}
+.device-blocked-screen.show{display:flex;}
+.device-blocked-icon{
+  width:72px;height:72px;border-radius:50%;background:var(--danger-soft);color:var(--danger);
+  display:flex;align-items:center;justify-content:center;margin-bottom:20px;
+}
+.device-blocked-icon svg{width:34px;height:34px;}
+.device-blocked-title{font-family:var(--font-display);font-weight:800;font-size:19px;margin-bottom:8px;}
+.device-blocked-message{font-size:14px;color:var(--label-2);line-height:1.5;max-width:320px;}
+.device-blocked-reason{font-size:12.5px;color:var(--label-3);margin-top:14px;padding:10px 16px;background:var(--bg-fill);border-radius:12px;max-width:320px;}
+
 .dev-panel{
   position:fixed;inset:0;z-index:600;background:var(--bg);
   display:none;flex-direction:column;
@@ -563,7 +586,14 @@ html[data-theme="dark"] .icon-moon{opacity:1;transform:rotate(0deg) scale(1);}
 }
 .dev-log-delete svg{width:13px;height:13px;}
 .dev-log-delete:active{transform:scale(.88);}
-.dev-log-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;padding-right:32px;}
+.dev-log-block{
+  position:absolute;top:10px;right:44px;width:26px;height:26px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;color:var(--accent);background:var(--accent-soft);
+  transition:transform var(--t-fast) var(--spring);
+}
+.dev-log-block svg{width:13px;height:13px;}
+.dev-log-block:active{transform:scale(.88);}
+.dev-log-top{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;flex-wrap:wrap;padding-right:66px;}
 .dev-log-time{font-family:var(--font-mono);font-size:10.5px;color:var(--label-3);}
 .dev-log-device{font-size:10.5px;font-weight:700;color:var(--label-2);background:var(--bg-fill);padding:4px 9px;border-radius:100px;}
 .dev-log-status{font-size:10px;font-weight:800;padding:4px 9px;border-radius:100px;text-transform:uppercase;}
@@ -613,6 +643,27 @@ html[data-theme="dark"] .icon-moon{opacity:1;transform:rotate(0deg) scale(1);}
 .timing-result-tag{font-size:10.5px;font-weight:700;color:var(--label-2);text-transform:uppercase;letter-spacing:.03em;}
 .timing-result-time{font-family:var(--font-mono);font-weight:800;font-size:18px;color:var(--accent);}
 .timing-gap-badge{background:var(--bg-fill);color:var(--label);font-family:var(--font-mono);font-weight:700;font-size:12px;padding:6px 11px;border-radius:100px;flex-shrink:0;}
+
+/* ---------- timing stop (opsional) ---------- */
+.timing-stop-row{display:flex;align-items:center;gap:8px;padding:12px 14px;border-bottom:1px solid var(--separator);}
+.timing-stop-row:last-child{border-bottom:none;}
+.timing-stop-field{flex:1;display:flex;flex-direction:column;gap:4px;}
+.timing-stop-field label{font-size:10px;font-weight:700;color:var(--label-3);text-transform:uppercase;letter-spacing:.03em;}
+.timing-stop-field input{background:var(--bg-fill);border-radius:10px;padding:9px 11px;font-family:var(--font-mono);font-weight:600;font-size:13.5px;width:100%;}
+.timing-stop-remove{
+  width:30px;height:30px;border-radius:50%;flex-shrink:0;margin-top:14px;
+  display:flex;align-items:center;justify-content:center;background:var(--danger-soft);color:var(--danger);
+  transition:transform var(--t-fast) var(--spring);
+}
+.timing-stop-remove svg{width:14px;height:14px;}
+.timing-stop-remove:active{transform:scale(.88);}
+.timing-add-stop-btn{
+  width:100%;display:flex;align-items:center;justify-content:center;gap:6px;
+  padding:12px;font-weight:700;font-size:13.5px;color:var(--accent);
+  transition:opacity var(--t-fast) ease;
+}
+.timing-add-stop-btn svg{width:16px;height:16px;}
+.timing-add-stop-btn:active{opacity:.6;}
 
 /* ---------- spc seamer / slitter shared ---------- */
 .spc-instruction{font-size:11.5px;color:var(--label-2);text-align:center;margin-bottom:12px;line-height:1.4;}
