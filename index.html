@@ -186,7 +186,7 @@
           </div>
         </div>
 
-        <div class="group-header">Konfigurasi Cek QC</div>
+        <div class="group-header">Konfigurasi Titik Cek</div>
         <div class="card">
           <div class="list-row">
             <span class="row-label">Jumlah Titik</span>
@@ -212,6 +212,15 @@
             <span class="row-label">Sampai</span>
             <input class="row-field" id="timingBreakEnd" value="19:00" placeholder="HH:MM">
           </div>
+        </div>
+
+        <div class="group-header">Time Stop (Opsional)</div>
+        <div class="card" style="padding-bottom:6px;">
+          <div id="timingStopList"></div>
+          <button type="button" class="timing-add-stop-btn" id="timingAddStopBtn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            Tambah Time Stop
+          </button>
         </div>
 
         <button class="btn btn-primary" id="timingGenerateBtn">
@@ -356,6 +365,16 @@
     </div>
   </div>
 
+  <!-- ============ DEVICE BLOCKED SCREEN (paling atas dari semua layer) ============ -->
+  <div class="device-blocked-screen" id="deviceBlockedScreen">
+    <div class="device-blocked-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+    </div>
+    <h2 class="device-blocked-title">Akses Diblokir</h2>
+    <p class="device-blocked-message">Perangkat ini telah diblokir oleh developer dan tidak dapat menggunakan aplikasi.</p>
+    <p class="device-blocked-reason hidden" id="deviceBlockedReason"></p>
+  </div>
+
   <!-- ============ DEVELOPER PANEL ============ -->
   <div class="dev-panel" id="devPanel">
     <div class="dev-panel-header">
@@ -366,6 +385,9 @@
         </button>
         <button class="icon-btn danger" id="devClearAllBtn" aria-label="Hapus semua log">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V6h12z"/></svg>
+        </button>
+        <button class="icon-btn" id="devBlockedListBtn" aria-label="Device diblokir">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="10" width="16" height="10" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
         </button>
         <button class="icon-btn" id="devLogoutBtn" aria-label="Keluar">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
